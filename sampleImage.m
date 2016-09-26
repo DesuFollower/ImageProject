@@ -1,0 +1,103 @@
+%This class issues sample images based on the patterns discussed in week
+% 39
+% Usage example:
+%   a=sampleImage(100,100);
+%   imshow(a.diagonalStripes(10,10));
+%   imshow(diagonalStripes(a));
+classdef sampleImage
+    properties
+        height
+        width
+        image
+    end
+    methods
+        %Constructor
+        function obj=sampleImage(height,width)
+            obj.height=height;
+            obj.width=width;
+            obj.image=ones(obj.height,obj.width);
+        end
+        
+        %Horizontal Strips
+        function r=horizontalStripes(obj,yFrequency)
+            for row=1:obj.height
+                obj.image(row,:)=127*sin(yFrequency*2*pi*row/obj.height)+127;
+            end
+            r=uint8(obj.image);
+        end
+        
+        %Vertical Strips
+        function r=verticalStripes(obj,xFrequency)
+            for column=1:obj.width
+                obj.image(column,:)=127*sin(xFrequency*2*pi*column/obj.width)+127;
+            end
+            r=uint8(obj.image);
+        end
+        
+        %Diagonal Stripes
+        function r=diagonalStripes(obj,fx,fy)
+            for row=1:obj.height
+                for column=1:obj.width
+                    obj.image(row,column)=127*(sin(2*pi*((fx*row/obj.height+fy*column/obj.width))/2)+1);
+                end
+            end
+            r=uint8(obj.image);
+        end
+        
+        %Chessboard Pattern
+        function r=Chessboard(obj,fx,fy)
+            for row=1:obj.height
+                for column=1:obj.width
+                    obj.image(row,column)=64*(square(fx*2*pi*(row-1)/obj.height)+1+square(fy*2*pi*(column-1)/obj.width)+1);
+                    if obj.image(row,column)<200 & obj.image(row,column)>50
+                        obj.image(row,column)=255;
+                    else obj.image(row,column)=0;
+                    end
+                end
+            end
+            r=uint8(obj.image);
+        end
+        
+        %Gaussian
+        function r=gaussianPattern(obj,maxSigma)
+            
+            dx=2*maxSigma/obj.width;
+            dy=2*maxSigma/obj.height;
+            
+            x=-maxSigma:dx:(maxSigma-dx);
+            y=-maxSigma:dy:(maxSigma-dy);
+            [X,Y] = meshgrid(x,y);
+            %F = mvnpdf([X1(:) X2(:)],mu,Sigma);
+            obj.image = mvnpdf([X(:) Y(:)]);
+            obj.image = uint8(256.*reshape(obj.image,length(x),length(y)));
+            r=obj.image;
+        end
+        
+        %White square on a black background
+        %squareSide is the percentage of the square side related to the
+        %width of the image 
+        
+        function r=whiteSquare(obj, squareSide)
+            
+%             if (squareSide >= obj.width || squareSide <= obj.height)
+%                 squareSide = 10; 
+%             end
+%             
+            halfSquare = squareSide/2; % half the side of the square, percentage of the total width
+            ymiddle = obj.height/2;  % middle point of height
+            xmiddle = obj.width/2; % middle point of width
+            
+            for row=1:obj.height
+                for column=1:obj.width
+                    if ((row > (ymiddle - halfSquare) && row < (ymiddle + halfSquare)) && (column> xmiddle- halfSquare && column< xmiddle + halfSquare))
+                        obj.image(row,column)=255;
+                    else
+                        obj.image(row,column)=0;
+                    end
+                end
+            end
+            r=obj.image;
+        end
+        
+    end
+end
