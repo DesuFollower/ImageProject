@@ -1,3 +1,4 @@
+%script to manually generate all the required images at once
 clc;
 clear;
 width=100;
@@ -48,9 +49,6 @@ imshow(uint8(image));
 imwrite(uint8(image),'diagonal_stripes.jpg');
 
 
-%TODO
-%Finish chessboard
-
 %Chess 
 image=ones(height,width);
 shift=1;
@@ -67,9 +65,6 @@ imshow(uint8(image));
 imwrite(uint8(image),'chess.jpg');
 
 %Gaussian
-
-%mu = [0 0];
-%Sigma = [.25 .3; .3 1];
 maxSigma=3;
 dx=2*maxSigma/width;
 dy=2*maxSigma/height;
@@ -77,7 +72,6 @@ dy=2*maxSigma/height;
 x=-maxSigma:dx:(maxSigma-dx);
 y=-maxSigma:dy:(maxSigma-dy);
 [X,Y] = meshgrid(x,y);
-%F = mvnpdf([X1(:) X2(:)],mu,Sigma);
 doubleImage=mvnpdf([X(:) Y(:)]);
 image = mvnpdf([X(:) Y(:)]);
 image = uint8(256.*reshape(image,length(x),length(y)));

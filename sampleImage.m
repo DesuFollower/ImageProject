@@ -8,7 +8,7 @@ classdef sampleImage
     properties
         height
         width
-        image
+        image % matrix of height x width, representing the image
     end
     methods
         %Constructor
@@ -49,6 +49,8 @@ classdef sampleImage
             for row=1:obj.height
                 for column=1:obj.width
                     obj.image(row,column)=64*(square(fx*2*pi*(row-1)/obj.height)+1+square(fy*2*pi*(column-1)/obj.width)+1);
+                    %marking the chess fields and then fixing them to use
+                    %only two colors (white and black)
                     if obj.image(row,column)<200 & obj.image(row,column)>50
                         obj.image(row,column)=255;
                     else obj.image(row,column)=0;
@@ -67,8 +69,9 @@ classdef sampleImage
             x=-maxSigma:dx:(maxSigma-dx);
             y=-maxSigma:dy:(maxSigma-dy);
             [X,Y] = meshgrid(x,y);
-            %F = mvnpdf([X1(:) X2(:)],mu,Sigma);
+            %generating probability density of the multivariate normal distribution
             obj.image = mvnpdf([X(:) Y(:)]);
+            % reshaping and andjusting format of an image pixel
             obj.image = uint8(256.*reshape(obj.image,length(x),length(y)));
             r=obj.image;
         end
@@ -79,14 +82,11 @@ classdef sampleImage
         
         function r=whiteSquare(obj, squareSide)
             
-%             if (squareSide >= obj.width || squareSide <= obj.height)
-%                 squareSide = 10; 
-%             end
-%             
             halfSquare = squareSide/2; % half the side of the square, percentage of the total width
             ymiddle = obj.height/2;  % middle point of height
             xmiddle = obj.width/2; % middle point of width
             
+            %marking all the points outside of the borders black
             for row=1:obj.height
                 for column=1:obj.width
                     if ((row > (ymiddle - halfSquare) && row < (ymiddle + halfSquare)) && (column> xmiddle- halfSquare && column< xmiddle + halfSquare))
