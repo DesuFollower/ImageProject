@@ -54,6 +54,40 @@ classdef cj2Filter
             %scaled to 255
             r=obj.absolute;
         end
+        %Bandpass
+        
+        function r = bandPass(obj, cutoffFrequencyOne,cutoffFrequencyTwo)
+                 
+                 x0=ceil(obj.height/2);
+                 y0=ceil(obj.width/2);
+                 obj.absolute = zeros(obj.height,obj.width);
+                 for row = 1: obj.height
+                     for column= 1: obj.width
+                         if sqrt((row - x0)*(row - x0)+(column - y0)*(column -y0))>cutoffFrequencyOne & sqrt((row - x0)*(row - x0)+(column - y0)*(column -y0)) <cutoffFrequencyTwo
+                            obj.absolute(row, column)=1;
+                         end
+                     end
+                 end
+                 r=obj.absolute;
+                 
+                 
+        end
+        function r = bandStop(obj, cutoffFrequencyOne,cutoffFrequencyTwo)
+                 
+                 x0=ceil(obj.height/2);
+                 y0=ceil(obj.width/2);
+                 obj.absolute = ones(obj.height,obj.width);
+                 for row = 1: obj.height
+                     for column= 1: obj.width
+                         if sqrt((row - x0)*(row - x0)+(column - y0)*(column -y0))>cutoffFrequencyOne & sqrt((row - x0)*(row - x0)+(column - y0)*(column -y0)) <cutoffFrequencyTwo
+                            obj.absolute(row, column)=0;
+                         end
+                     end
+                 end
+                 r=obj.absolute;
+                 
+                 
+        end
     end
     
 end

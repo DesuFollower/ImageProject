@@ -4,8 +4,9 @@ height=200;
 width=200;
 signalF=10;
 filterCutoff=8;
-image=sampleImage(height,width).horizontalStripes(signalF);
-
+filterCutoffTwo=30;
+image=sampleImage(height,width);
+image=image.horizontalStripes(signalF);
 figure(1)
 subplot(2,3,1)
 imshow(image);
@@ -17,7 +18,8 @@ imshow(mat2gray(abs(image_fft)));
 title('Magnitude of FFT Original');
 
 subplot(2,3,2)
-lowPassFilter=cj2Filter(height,width).lowPass(filterCutoff);
+lowPassFilter=cj2Filter(height,width);
+lowPassFilter = lowPassFilter.bandStop(filterCutoff,filterCutoffTwo);
 filterTimedomain=fftshift(ifft2(lowPassFilter));
 %Fitting the spectrum in 0...255
 scalingFactor=floor(255./max(max(abs(filterTimedomain))));
