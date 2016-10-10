@@ -48,7 +48,6 @@ end
 f_original = mat2gray(abs(fftshift(fft2(image))));
 f_modified = mat2gray(abs(fftshift(fft2(img))));
 
-
 figure
 subplot(2,2,1)
 imshow(image)
