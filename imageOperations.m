@@ -69,5 +69,3 @@ classdef imageOperations
     end
 end
 
-
-% assignin('base','i',i);
