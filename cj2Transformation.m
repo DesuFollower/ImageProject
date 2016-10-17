@@ -10,8 +10,7 @@ classdef cj2Transformation
             %@filterAmplitude: m x n complex array
             %@image: m x n uint8 array
             %@returns: m x n complex array
-           filterAmplitude=fftshift(filterAmplitude);           
-           r=ifft2(fftshift(fft2(image).*filterAmplitude));
+           r=ifft2(fftshift(fft2(image)).*filterAmplitude);
             
         end     
     end

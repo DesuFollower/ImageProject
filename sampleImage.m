@@ -21,7 +21,7 @@ classdef sampleImage
         %Horizontal Strips
         function r=horizontalStripes(obj,yFrequency)
             for row=1:obj.height
-                obj.image(row,:)=127*sin(yFrequency*2*pi*row/obj.height)+127;
+                obj.image(row,:)=127*cos(yFrequency*2*pi*(row-1)/(obj.height-1))+127;
             end
             r=uint8(obj.image);
         end
@@ -29,7 +29,7 @@ classdef sampleImage
         %Vertical Strips
         function r=verticalStripes(obj,xFrequency)
             for column=1:obj.width
-                obj.image(column,:)=127*sin(xFrequency*2*pi*column/obj.width)+127;
+                obj.image(column,:)=127*cos(xFrequency*2*pi*(column-1)/obj.width)+127;
             end
             r=uint8(obj.image);
         end
@@ -38,7 +38,7 @@ classdef sampleImage
         function r=diagonalStripes(obj,fx,fy)
             for row=1:obj.height
                 for column=1:obj.width
-                    obj.image(row,column)=127*(sin(2*pi*((fx*row/obj.height+fy*column/obj.width))/2)+1);
+                    obj.image(row,column)=127*(cos(2*pi*((fx*row/obj.height+fy*column/obj.width))/2)+1);
                 end
             end
             r=uint8(obj.image);
@@ -51,7 +51,7 @@ classdef sampleImage
                     obj.image(row,column)=64*(square(fx*2*pi*(row-1)/obj.height)+1+square(fy*2*pi*(column-1)/obj.width)+1);
                     %marking the chess fields and then fixing them to use
                     %only two colors (white and black)
-                    if obj.image(row,column)<200 & obj.image(row,column)>50
+                    if obj.image(row,column)<200 && obj.image(row,column)>50
                         obj.image(row,column)=255;
                     else obj.image(row,column)=0;
                     end
