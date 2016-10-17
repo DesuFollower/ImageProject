@@ -4,6 +4,49 @@ classdef imageOperations
         width
         image
     end
+    methods (Access=private)
+        function r=sampleDown(obj, ratio)
+            
+            step = 1/ratio;
+            
+            X=ceil([1:step:obj.height]);
+            Y=ceil([1:step:obj.width]);
+            
+            r = obj.image(X,Y);
+         end         
+            
+        function r=sampleUp(obj, ratio)
+            step = 1/ratio;
+            
+            newHeight=ceil(obj.height*ratio);
+            newWidth=ceil(obj.width*ratio);
+
+            r =uint8(zeros(newHeight, newWidth));
+            
+            pImg=zeros(obj.height+2, obj.width+2);
+            pImg(2:end-1,2:end-1)=obj.image;
+            
+       
+            function r = interpolatePoint(i,j)
+                % defining indexes of initial matrix values,
+                % shifting by 1 as it is padded
+                initX=floor(i*step)+1; initY=floor(j*step)+1;
+                % defining the distance between X and X1 / Y and Y1
+                diffX=initX-i*step; diffY=initY-j*step;
+                
+                y0= pImg(initX,initY)*diffX + pImg(initX+1,initY)*(1-diffX);
+                y1= pImg(initX,initY+1)*diffX + pImg(initX+1,initY+1)*(1-diffX);
+         
+                r= uint8(y0*diffY + y1*(1-diffY));
+            end
+            
+            for i = 1: newHeight
+                for j=1:newWidth
+                    r(i,j)=interpolatePoint(i,j);
+                end
+            end
+        end
+    end
     methods
         %Constructor
         function obj=imageOperations(img)
@@ -13,6 +56,11 @@ classdef imageOperations
             else
                 obj.image = img;
             end
+        end
+% resample without anti-aliasing filter
+        function r = resample(obj, ratio)
+            if (ratio>1) r = sampleUp(obj,ratio); end
+            if (ratio<=1) r = sampleDown(obj,ratio); end
         end
 % rotate 90 degrees clockwise
         function r = rotate90cw(obj)
