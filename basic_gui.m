@@ -22,7 +22,7 @@ function varargout = basic_gui(varargin)
 
 % Edit the above text to modify the response to help basic_gui
 
-% Last Modified by GUIDE v2.5 22-Oct-2016 02:23:17
+% Last Modified by GUIDE v2.5 22-Oct-2016 14:41:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -200,9 +200,9 @@ h = get(handles.uibuttonrotations, 'SelectedObject');% get the required rotation
 data.rotation = get(h, 'Tag');    % get the tag
 switch data.rotation
     case 'rotate_left'
-        im.image = op.rotate90cw();
-    case 'rotate_right'
         im.image = op.rotate90ccw();
+    case 'rotate_right'
+        im.image = op.rotate90cw();
     case 'rotate_180'
         im.image = op.rotate180();
     case 'mirrorLR'
@@ -268,10 +268,14 @@ setappdata(handles.optionspanel, 'image_fft', im_fft); %image fft data available
 
 h = get(handles.uibuttoncrop, 'SelectedObject');% get the required rotation handle
 data.cropping = get(h, 'Tag');    % get the tag
-height  = str2double(get(handles.crop_h, 'String'));
+height_from  = str2double(get(handles.crop_h_from, 'String'));
+height_to  = str2double(get(handles.crop_h_to, 'String'));
+height = height_from:height_to;
 setappdata(handles.uibuttoncrop, 'crop_height', height);
 
-width = str2double(get(handles.crop_h, 'String'));
+width_from = str2double(get(handles.crop_w_from, 'String'));
+width_to = str2double(get(handles.crop_w_to, 'String'));
+width = width_from:width_to;
 setappdata(handles.uibuttoncrop, 'crop_width', width);
 
 switch data.cropping
@@ -302,6 +306,7 @@ data.filter = get(h, 'Tag');    % get the tag
 
 switch data.filter
     case 'high_pass'
+        set(handles.stop_freq, 'Enable', 'off');
         setappdata(handles.optionspanel, 'filter_applied', true);
         % Create filter
         imf.absolute =  highPass(imf, passf);
@@ -317,6 +322,7 @@ switch data.filter
         setappdata(handles.optionspanel, 'image_filtered_fft', im_filtered_fft);
         
     case 'low_pass'
+        set(handles.stop_freq, 'Enable', 'off');
         setappdata(handles.optionspanel, 'filter_applied', true);
         imf.absolute =  lowPass(imf, passf);
         
@@ -331,6 +337,7 @@ switch data.filter
         setappdata(handles.optionspanel, 'image_filtered_fft', im_filtered_fft);
         
     case 'band_pass'
+        set(handles.stop_freq, 'Enable', 'on');
         if passf < stopf
             setappdata(handles.optionspanel, 'filter_applied', true);
             imf.absolute =  bandPass(imf, passf, stopf);
@@ -351,6 +358,7 @@ switch data.filter
         setappdata(handles.optionspanel, 'image_filtered', im_filtered);
         setappdata(handles.optionspanel, 'image_filtered_fft', im_filtered_fft);
     case 'no_filter'
+        set(handles.stop_freq, 'Enable', 'off');
         setappdata(handles.optionspanel, 'filter_applied', false);
         
         
@@ -593,18 +601,18 @@ getAndUpdate(handles);
 
 
 
-function crop_h_Callback(hObject, eventdata, handles)
-% hObject    handle to crop_h (see GCBO)
+function crop_h_from_Callback(hObject, eventdata, handles)
+% hObject    handle to crop_h_from (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of crop_h as text
-%        str2double(get(hObject,'String')) returns contents of crop_h as a double
+% Hints: get(hObject,'String') returns contents of crop_h_from as text
+%        str2double(get(hObject,'String')) returns contents of crop_h_from as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function crop_h_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to crop_h (see GCBO)
+function crop_h_from_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to crop_h_from (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -616,18 +624,18 @@ end
 
 
 
-function crop_w_Callback(hObject, eventdata, handles)
-% hObject    handle to crop_w (see GCBO)
+function crop_w_from_Callback(hObject, eventdata, handles)
+% hObject    handle to crop_w_from (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of crop_w as text
-%        str2double(get(hObject,'String')) returns contents of crop_w as a double
+% Hints: get(hObject,'String') returns contents of crop_w_from as text
+%        str2double(get(hObject,'String')) returns contents of crop_w_from as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function crop_w_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to crop_w (see GCBO)
+function crop_w_from_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to crop_w_from (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -752,9 +760,9 @@ function crop_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of crop
 
 
-% --- Executes on key press with focus on crop_h and none of its controls.
-function crop_h_KeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to crop_h (see GCBO)
+% --- Executes on key press with focus on crop_h_from and none of its controls.
+function crop_h_from_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to crop_h_from (see GCBO)
 % eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
 %	Key: name of the key that was pressed, in lower case
 %	Character: character interpretation of the key(s) that was pressed
@@ -763,9 +771,9 @@ function crop_h_KeyPressFcn(hObject, eventdata, handles)
 getAndUpdate(handles);
 
 
-% --- Executes on key press with focus on crop_w and none of its controls.
-function crop_w_KeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to crop_w (see GCBO)
+% --- Executes on key press with focus on crop_w_from and none of its controls.
+function crop_w_from_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to crop_w_from (see GCBO)
 % eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
 %	Key: name of the key that was pressed, in lower case
 %	Character: character interpretation of the key(s) that was pressed
@@ -813,3 +821,49 @@ function uibuttoncrop_SelectionChangedFcn(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 getAndUpdate(handles);
+
+
+
+function crop_h_to_Callback(hObject, eventdata, handles)
+% hObject    handle to crop_h_to (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of crop_h_to as text
+%        str2double(get(hObject,'String')) returns contents of crop_h_to as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function crop_h_to_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to crop_h_to (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function crop_w_to_Callback(hObject, eventdata, handles)
+% hObject    handle to crop_w_to (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of crop_w_to as text
+%        str2double(get(hObject,'String')) returns contents of crop_w_to as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function crop_w_to_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to crop_w_to (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
