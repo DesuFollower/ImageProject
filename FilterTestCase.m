@@ -1,13 +1,12 @@
 clear;
 clc;
-height=100;
-width=100;
-signalF=5;
+height=200;
+width=200;
+signalF=10;
 filterCutoff=8;
-filterCutoffTwo=15;
+filterCutoffTwo=30;
 image=sampleImage(height,width);
-image=1/2.*(image.horizontalStripes(signalF)+image.horizontalStripes(4+signalF).*1);
-
+image=image.horizontalStripes(signalF);
 figure(1)
 subplot(2,3,1)
 imshow(image);
@@ -19,27 +18,30 @@ imshow(mat2gray(abs(image_fft)));
 title('Magnitude of FFT Original');
 
 subplot(2,3,2)
+<<<<<<< HEAD
 filterInstance=cj2Filter(height,width);
 filterInstance = filterInstance.bandStop(filterCutoff,filterCutoffTwo);
 % filterInstance = filterInstance.highPass(filterCutoff);
 filterTimedomain=fftshift(ifft2(filterInstance));
+=======
+lowPassFilter=cj2Filter(height,width);
+lowPassFilter = lowPassFilter.bandStop(filterCutoff,filterCutoffTwo);
+filterTimedomain=fftshift(ifft2(lowPassFilter));
+>>>>>>> 28691185e8dd194222c7248be7d46839e3d47fbb
 %Fitting the spectrum in 0...255
 scalingFactor=floor(255./max(max(abs(filterTimedomain))));
 imshow(uint8(scalingFactor.*abs(filterTimedomain)));
-%imshow(uint8(scalingFactor.*filterTimedomain));
 title('Time Domain of FFT filter');
 
 
 subplot(2,3,5)
-imshow(uint8(255*filterInstance));
+imshow(uint8(255*lowPassFilter));
 title('Magnitude of FFT filter');
 
 
 subplot(2,3,3)
-filteredImage=cj2Transformation.filter(filterInstance,image);
-%imshow(uint8(abs(filteredImage)));
-scalingFactor=floor(255./max(max(abs(filteredImage))));
-imshow(uint8(scalingFactor.*abs(filteredImage)));
+filteredImage=cj2Transformation.filter(lowPassFilter,image);
+imshow(uint8(filteredImage));
 title('Filtered Image');
 
 subplot(2,3,6)

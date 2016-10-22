@@ -27,8 +27,14 @@ classdef cj2Filter
                     if sqrt((row-x0)*(row-x0)+(column-y0)*(column-y0))<cuttoffFrequency
                         %if the distance from the middle of the screen is
                         %less than the cuttoff frequency set the filter to 1.
+<<<<<<< HEAD
                         obj.absolute(row,column)=1.0;
                     end
+=======
+
+                        obj.absolute(row,column)=1.0 +0*1i;
+                    end 
+>>>>>>> 28691185e8dd194222c7248be7d46839e3d47fbb
                 end
             end
             %The amplitude is normalized 0...1, if displayed with imshow must be
@@ -73,6 +79,7 @@ classdef cj2Filter
             
         end
         function r = bandStop(obj, cutoffFrequencyOne,cutoffFrequencyTwo)
+<<<<<<< HEAD
             
             x0=ceil(obj.height/2);
             y0=ceil(obj.width/2);
@@ -89,6 +96,25 @@ classdef cj2Filter
             
         end
         function r = simple_IFFT_scaled(obj)
+=======
+                 
+                 x0=ceil(obj.height/2);
+                 y0=ceil(obj.width/2);
+                 obj.absolute = ones(obj.height,obj.width);
+                 for row = 1: obj.height
+                     for column= 1: obj.width
+                         if sqrt((row - x0)*(row - x0)+(column - y0)*(column -y0))>cutoffFrequencyOne && sqrt((row - x0)*(row - x0)+(column - y0)*(column -y0)) <cutoffFrequencyTwo
+                            obj.absolute(row, column)=0;
+                         end
+                     end
+                 end
+                 r=obj.absolute;
+                 
+               
+        end
+		% Function to calculate the scaled IFFT for the gui
+		function r = simple_IFFT_scaled(obj)
+>>>>>>> 28691185e8dd194222c7248be7d46839e3d47fbb
             filterTimedomain = fftshift(ifft2(obj.absolute));
             %Fitting the spectrum in 0...255
             scalingFactor=floor(255./max(max(abs(filterTimedomain))));
