@@ -1,3 +1,4 @@
+
 classdef imageOperations
     properties
         height
@@ -119,7 +120,7 @@ classdef imageOperations
         end
         % rotate 90 degrees counter clockwise
         function r = rotate90ccw(obj)
-            outputImage = zeros(obj.width, obj.height);
+           outputImage = zeros(obj.width, obj.height);
             for i = 1:obj.width
                 for j = 1:obj.height
                     outputImage(i, j) = obj.image(j, obj.width-i+1);
