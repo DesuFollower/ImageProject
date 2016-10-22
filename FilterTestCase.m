@@ -20,8 +20,8 @@ title('Magnitude of FFT Original');
 
 subplot(2,3,2)
 filterInstance=cj2Filter(height,width);
-%filterInstance = filterInstance.bandStop(filterCutoff,filterCutoffTwo);
-filterInstance = filterInstance.lowPass(filterCutoff);
+filterInstance = filterInstance.bandStop(filterCutoff,filterCutoffTwo);
+% filterInstance = filterInstance.highPass(filterCutoff);
 filterTimedomain=fftshift(ifft2(filterInstance));
 %Fitting the spectrum in 0...255
 scalingFactor=floor(255./max(max(abs(filterTimedomain))));

@@ -12,52 +12,59 @@ classdef sampleImage
     end
     methods
         %Constructor
+        % Default image size 100x100
         function obj=sampleImage(height,width)
+            if height <= 0 || width < 0 
+            obj.height=100;
+            obj.width=100;
+            obj.image=ones(obj.height,obj.width);    
+            else 
             obj.height=height;
             obj.width=width;
             obj.image=ones(obj.height,obj.width);
+            end
         end
         
         %Horizontal Strips
         function r=horizontalStripes(obj,yFrequency)
             for row=1:obj.height
-                obj.image(row,:)=127*cos(yFrequency*2*pi*(row-1)/(obj.height-1))+127;
+                obj.image(row,:)=127*sin(yFrequency*2*pi*row/obj.height)+127;
             end
-            r=uint8(obj.image);
+            r=obj.image;
         end
         
         %Vertical Strips
         function r=verticalStripes(obj,xFrequency)
             for column=1:obj.width
-                obj.image(column,:)=127*cos(xFrequency*2*pi*(column-1)/obj.width)+127;
+                obj.image(:, column)=127*sin(xFrequency*2*pi*column/obj.width)+127;
             end
-            r=uint8(obj.image);
+            r=obj.image;
         end
         
         %Diagonal Stripes
         function r=diagonalStripes(obj,fx,fy)
             for row=1:obj.height
                 for column=1:obj.width
-                    obj.image(row,column)=127*(cos(2*pi*((fx*row/obj.height+fy*column/obj.width))/2)+1);
+                    obj.image(row,column)=127*(sin(2*pi*((fx*row/obj.height+fy*column/obj.width))/2)+1);
                 end
             end
-            r=uint8(obj.image);
+            r=obj.image;
         end
         
         %Chessboard Pattern
-        function r=Chessboard(obj,fx,fy)
+        function r=chessboard(obj,fx,fy)
             for row=1:obj.height
                 for column=1:obj.width
                     obj.image(row,column)=64*(square(fx*2*pi*(row-1)/obj.height)+1+square(fy*2*pi*(column-1)/obj.width)+1);
                     %marking the chess fields and then fixing them to use
                     %only two colors (white and black)
-                    if obj.image(row,column)<200 && obj.image(row,column)>50
+                    if obj.image(row,column)<200 & obj.image(row,column)>50
                         obj.image(row,column)=255;
                     else obj.image(row,column)=0;
                     end
                 end
             end
-            r=uint8(obj.image);
+            r=obj.image;
         end
         
         %Gaussian
@@ -78,7 +85,7 @@ classdef sampleImage
         
         %White square on a black background
         %squareSide is the percentage of the square side related to the
-        %width of the image 
+        %width of the image
         
         function r=whiteSquare(obj, squareSide)
             
@@ -98,6 +105,18 @@ classdef sampleImage
             end
             r=obj.image;
         end
+        
+        
+        % function to calculate fft for the image after one of the
+        % desisigns is applied; used in the gui
+        function r = simpleFFT(obj)
+            image_fft=fftshift(fft2(obj.image));
+            image_fft = log(abs(image_fft) + 1); % log of the magnitude for
+            image_fft = mat2gray(image_fft);    %Scale the values between 0 and 1
+            r = image_fft;
+            
+        end
+        
         
     end
 end

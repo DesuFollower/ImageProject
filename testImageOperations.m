@@ -1,7 +1,7 @@
 clear
 clc
-% image = imread('http://www.doc.gold.ac.uk/~mas02fl/MSC101/ImageProcess/defect03_files/fig_2_3_14.jpg');
-image = imread('.\OutputImages\horizontal_stripes.jpg');
+image = imread('http://www.doc.gold.ac.uk/~mas02fl/MSC101/ImageProcess/defect03_files/fig_2_3_14.jpg');
+% image = imread('.\OutputImages\horizontal_stripes.jpg');
 class = @imageOperations;
 A = class(image);
 
