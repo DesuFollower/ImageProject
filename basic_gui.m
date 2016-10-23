@@ -22,7 +22,7 @@ function varargout = basic_gui(varargin)
 
 % Edit the above text to modify the response to help basic_gui
 
-% Last Modified by GUIDE v2.5 22-Oct-2016 14:41:34
+% Last Modified by GUIDE v2.5 23-Oct-2016 16:03:51
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -46,336 +46,349 @@ end
 
 % --- Executes just before basic_gui is made visible.
 function basic_gui_OpeningFcn(hObject, eventdata, handles, varargin)
-% This function has no output args, see OutputFcn.
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to basic_gui (see VARARGIN)
-set(handles.uibuttonimage,'selectedobject',handles.horizontal_stripes);
-set(handles.uibuttonfilters,'selectedobject',handles.no_filter);
-set(handles.uibuttonrotations,'selectedobject',handles.no_rotation);
+    % This function has no output args, see OutputFcn.
+    % hObject    handle to figure
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    % varargin   command line arguments to basic_gui (see VARARGIN)
+    set(handles.uibuttonimage,'selectedobject',handles.horizontal_stripes);
+    set(handles.uibuttonfilters,'selectedobject',handles.no_filter);
+    set(handles.uibuttonrotations,'selectedobject',handles.no_rotation);
 
-global im_height;
-im_height = 200;
-global im_width; 
-im_width = 200;
-original = sampleImage(im_height,im_width); %original image for reset functionality
-setappdata(handles.optionspanel, 'original_image', original); %image data available to the whole option panel
-im = sampleImage(im_height,im_width); %sampleImage object to be used through the program
-setappdata(handles.optionspanel, 'image', im); %image data available to the whole option panel
-filter = cj2Filter(im_height,im_width); %filter in frequency
-setappdata(handles.optionspanel, 'filter_f', filter);
-im_f = sampleImage(im_height,im_width); %sampleImage object for the filtered image
-setappdata(handles.optionspanel, 'image_filtered', im_f); %image data available to the whole option panel
-setappdata(handles.optionspanel, 'filter_applied', false)
+    global im_height;
+    im_height = 200;
+    global im_width; 
+    im_width = 200;
+    original = sampleImage(im_height,im_width); %original image for reset functionality
+    setappdata(handles.optionspanel, 'original_image', original); %image data available to the whole option panel
+    im = sampleImage(im_height,im_width); %sampleImage object to be used through the program
+    setappdata(handles.optionspanel, 'image', im); %image data available to the whole option panel
+    filter = cj2Filter(im_height,im_width); %filter in frequency
+    setappdata(handles.optionspanel, 'filter_f', filter);
+    im_f = sampleImage(im_height,im_width); %sampleImage object for the filtered image
+    setappdata(handles.optionspanel, 'image_filtered', im_f); %image data available to the whole option panel
+    setappdata(handles.optionspanel, 'filter_applied', false)
+    setappdata(handles.optionspanel, 'rotations_applied', false)
+    setappdata(handles.optionspanel, 'cropping_applied', false)
+    setappdata(handles.optionspanel, 'shifting_applied', false)
+    setappdata(handles.optionspanel, 'resampling_applied', false)
 
-% Choose default command line output for basic_gui
-handles.output = hObject;
+    % Choose default command line output for basic_gui
+    handles.output = hObject;
 
-% Update handles structure
-guidata(hObject, handles);
+    % Update handles structure
+    guidata(hObject, handles);
 
-% UIWAIT makes basic_gui wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
-getAndUpdate(handles);
+    % UIWAIT makes basic_gui wait for user response (see UIRESUME)
+    % uiwait(handles.figure1);
+    getAndUpdate(handles);
 
 % --- Outputs from this function are returned to the command line.
 function varargout = basic_gui_OutputFcn(hObject, eventdata, handles)
-% varargout  cell array for returning output args (see VARARGOUT);
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+    % varargout  cell array for returning output args (see VARARGOUT);
+    % hObject    handle to figure
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
 
-% Get default command line output from handles structure
-varargout{1} = handles.output;
-
-% --- Executes when selected object is changed in uibuttonimage.
-function uibuttonimage_SelectionChangedFcn(hObject, eventdata, handles)
-% hObject    handle to the selected object in uibuttonimage
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-getAndUpdate(handles);
-
+    % Get default command line output from handles structure
+    varargout{1} = handles.output;
 
 function getAndUpdate(handles)
-data = getData(handles);
-updatePlots(handles, data);
-function data = getData(handles);
-%globals 
-global im_height;
-global im_width;
+    data = getData(handles);
+    updatePlots(handles, data);
+function data = getData(handles)
+    %globals 
+    global im_height;
+    global im_width;
 
-%get original image
-im = getappdata(handles.optionspanel, 'image');
-assignin('base', 'im', im);
-imf = getappdata(handles.optionspanel, 'filter_f');
-assignin('base', 'im_f', imf);
-im_filtered = getappdata(handles.optionspanel, 'image_filtered');
-assignin('base', 'im_filtered', im_filtered);
+    %get original image
+    im = getappdata(handles.optionspanel, 'image');
+    assignin('base', 'im', im);
+    imf = getappdata(handles.optionspanel, 'filter_f');
+    assignin('base', 'im_f', imf);
+    im_filtered = getappdata(handles.optionspanel, 'image_filtered');
+    assignin('base', 'im_filtered', im_filtered);
 
-% get frequency data
-fx = str2double(get(handles.xfreq, 'String'));
-setappdata(handles.uibuttonimage, 'imagexfreq', fx);
+    % get frequency data
+    fx = str2double(get(handles.xfreq, 'String'));
+    setappdata(handles.uibuttonimage, 'imagexfreq', fx);
 
-fy = str2double(get(handles.yfreq, 'String'));
-assignin('base', 'yf', fy); % show variable in workspace for debug
-setappdata(handles.uibuttonimage, 'imageyfreq', fy);
+    fy = str2double(get(handles.yfreq, 'String'));
+    assignin('base', 'yf', fy); % show variable in workspace for debug
+    setappdata(handles.uibuttonimage, 'imageyfreq', fy);
 
-%get square and sigma values
-sqwidth = str2double(get(handles.sqwidth, 'String'));
-setappdata(handles.uibuttonimage, 'squareWidth', sqwidth);
+    %get square and sigma values
+    sqwidth = str2double(get(handles.sqwidth, 'String'));
+    setappdata(handles.uibuttonimage, 'squareWidth', sqwidth);
 
-maxSigma = str2double(get(handles.maxsigma, 'String'));
-setappdata(handles.uibuttonimage, 'squareWidth', maxSigma);
+    maxSigma = str2double(get(handles.maxsigma, 'String'));
+    setappdata(handles.uibuttonimage, 'squareWidth', maxSigma);
 
-%get handles to selected pattern
-h = get(handles.uibuttonimage,'SelectedObject');
-assignin('base', 'h', h);
-data.pattern = get(h,'Tag');
+    %get handles to selected pattern
+    h = get(handles.uibuttonimage,'SelectedObject');
+    assignin('base', 'h', h);
+    data.pattern = get(h,'Tag');
 
-% Change image size if nt custom
-if ~strcmp(data.pattern,'custom_pic')
-    % agree size of original with the new size of the image and save the
-       % data when not using custom image
-       reset_size = sampleImage(im_height,im_width);
-        im = reset_size;
-         im_filtered = reset_size; 
-         imf =  cj2Filter(im_height,im_width);
-        setappdata(handles.optionspanel, 'image', im); %image data available to the whole option panel
-        setappdata(handles.optionspanel, 'filter_f', imf); %image data available to the whole option panel
-        setappdata(handles.optionspanel, 'image_filtered', im_filtered);
-        
-end
+    % Change image size if nt custom
+    if ~strcmp(data.pattern,'custom_pic')
+        % agree size of original with the new size of the image and save the
+           % data when not using custom image
+           reset_size = sampleImage(im_height,im_width);
+            im = reset_size;
+             im_filtered = reset_size; 
+             imf =  cj2Filter(im_height,im_width);
+            setappdata(handles.optionspanel, 'image', im); %image data available to the whole option panel
+            setappdata(handles.optionspanel, 'filter_f', imf); %image data available to the whole option panel
+            setappdata(handles.optionspanel, 'image_filtered', im_filtered);
 
-% PATTERN
-
-switch data.pattern % Get Tag of selected object.
-    case 'horizontal_stripes'
-        im.image = horizontalStripes(im, fy);
-        
-    case 'vertical_stripes'
-        im.image  = verticalStripes(im, fx);
-        
-    case 'diagonal_stripes'
-        im.image = diagonalStripes(im, fx, fy);
-        
-    case 'chessboard'
-        im.image  = chessboard(im, fx, fy);
-        
-    case 'white_square'
-        im.image  = whiteSquare(im, sqwidth);
-        
-    case 'gaussian'
-        im.image  = gaussianPattern(im, maxSigma);
-    case 'custom_pic'
-        image = rgb2gray(imread('http://www.doc.gold.ac.uk/~mas02fl/MSC101/ImageProcess/defect03_files/fig_2_3_14.jpg'));
-       % agree size of original with the new size of the image and save the
-       % data
-        [im.height,im.width] = size(image); 
-        [imf.height,imf.width] = size(image); 
-        [im_filtered.height,im_filtered.width] = size(image);
-        im.image = image;
-        imf.absolute = image;
-        im.image = image;
-        
-        setappdata(handles.optionspanel, 'filter_f', imf); %image data available to the whole option panel
-        setappdata(handles.optionspanel, 'image_filtered', im_filtered);
-
-end
-
-% Update image data after every possible operation
-im_fft = simpleFFT(im);
-setappdata(handles.optionspanel, 'image', im); %image data available to the whole option panel
-setappdata(handles.optionspanel, 'image_fft', im_fft); %image fft data available to the whole gui
-
-orig = getappdata(handles.optionspanel, 'image'); % get the data and save before any applied filters etc...
-setappdata(handles.optionspanel, 'original_image', orig);
-
-% ROTATIONS
-
-op = imageOperations(im.image); % used for cropping, masking etc
-
-h = get(handles.uibuttonrotations, 'SelectedObject');% get the required rotation handle
-data.rotation = get(h, 'Tag');    % get the tag
-switch data.rotation
-    case 'rotate_left'
-        im.image = op.rotate90ccw();
-    case 'rotate_right'
-        im.image = op.rotate90cw();
-    case 'rotate_180'
-        im.image = op.rotate180();
-    case 'mirrorLR'
-        im.image = op.mirrorlr();
-    case 'mirrorUD'
-        im.image = op.mirrorud();
-    case 'no_rotation'
-        % do nothing 
-end
-
-% Update image data after every possible operation
-im_fft = simpleFFT(im);
-setappdata(handles.optionspanel, 'image', im); %image data available to the whole option panel
-setappdata(handles.optionspanel, 'image_fft', im_fft); %image fft data available to the whole gui
-
-% SHIFTING + RESAMPLE
-h = get(handles.uibuttonother, 'SelectedObject');% get the required rotation handle
-data.shift = get(h, 'Tag');    % get the tag
-
-% right shift distance
-sh_r  = str2double(get(handles.shift_r, 'String'));
-setappdata(handles.uibuttoncrop, 'shift_right', sh_r);
-% down shft distance
-sh_d = str2double(get(handles.shift_d, 'String'));
-setappdata(handles.uibuttoncrop, 'shift_down', sh_d);
-% get ratio for resampling
-ratio = str2double(get(handles.resampl_ratio, 'String'));
-setappdata(handles.uibuttoncrop, 'resample_ratio', ratio);
-
-%Switch for the shift radiobutons
-switch data.shift
-    case 'shift_right'
-        im.image = op.shiftRight(sh_r);
-    case 'shift_down'
-        im.image = op.shiftDown(sh_d);
-    case 'shiftRD'
-        im.image = op.shiftRightDown(sh_r, sh_d);
-    case 'no_shift'
-        % do nothing
-    otherwise
-        %do nothing
-end 
-
-% Update image data after every possible operation
-im_fft = simpleFFT(im);
-setappdata(handles.optionspanel, 'image', im); %image data available to the whole option panel
-setappdata(handles.optionspanel, 'image_fft', im_fft); %image fft data available to the whole gui
-
-if get(handles.resample, 'Value')
-    if get(handles.antialias, 'Value')
-           im.image = op.resample(ratio, true);
-    else
-           im.image = op.resample(ratio);         % 2nd param is optional, false by default
     end
-end
 
-% Update image data after every possible operation
-im_fft = simpleFFT(im);
-setappdata(handles.optionspanel, 'image', im); %image data available to the whole option panel
-setappdata(handles.optionspanel, 'image_fft', im_fft); %image fft data available to the whole gui
+    % PATTERN
 
-%CROPPING or MASKING
+    switch data.pattern % Get Tag of selected object.
+        case 'horizontal_stripes'
+            im.image = horizontalStripes(im, fy);
 
-h = get(handles.uibuttoncrop, 'SelectedObject');% get the required rotation handle
-data.cropping = get(h, 'Tag');    % get the tag
-height_from  = str2double(get(handles.crop_h_from, 'String'));
-height_to  = str2double(get(handles.crop_h_to, 'String'));
-height = height_from:height_to;
-setappdata(handles.uibuttoncrop, 'crop_height', height);
+        case 'vertical_stripes'
+            im.image  = verticalStripes(im, fx);
 
-width_from = str2double(get(handles.crop_w_from, 'String'));
-width_to = str2double(get(handles.crop_w_to, 'String'));
-width = width_from:width_to;
-setappdata(handles.uibuttoncrop, 'crop_width', width);
+        case 'diagonal_stripes'
+            im.image = diagonalStripes(im, fx, fy);
 
-switch data.cropping
-    case 'crop'
-        im.image = op.crop(height, width);
-    case 'mask'        
-        im.image = op.maskout(height, width);
-    case 'none'
-        im.image = orig.image;        
-end 
+        case 'chessboard'
+            im.image  = chessboard(im, fx, fy);
 
-im_fft = simpleFFT(im);
-setappdata(handles.optionspanel, 'image', im); %image data available to the whole option panel
-setappdata(handles.optionspanel, 'image_fft', im_fft); %image fft data available to the whole gui
+        case 'white_square'
+            im.image  = whiteSquare(im, sqwidth);
 
-%FILTERING
-%filtered image data
-% get sellected frequencies
-passf = str2double(get(handles.pass_freq, 'String'));
-setappdata(handles.uibuttonimage, 'passfreq', passf);
+        case 'gaussian'
+            im.image  = gaussianPattern(im, maxSigma);
+        case 'custom_pic'
+            image = imread('http://www.doc.gold.ac.uk/~mas02fl/MSC101/ImageProcess/defect03_files/fig_2_3_14.jpg');
+           % agree size of original with the new size of the image and save the
+           % data
+            [im.height,im.width] = size(image); 
+            [imf.height,imf.width] = size(image); 
+            [im_filtered.height,im_filtered.width] = size(image);
+            im.image = image;
+            imf.absolute = image;
+            im.image = image;
 
-stopf = str2double(get(handles.stop_freq , 'String'));
-setappdata(handles.uibuttonimage, 'stopfreq', stopf );
+            setappdata(handles.optionspanel, 'filter_f', imf); %image data available to the whole option panel
+            setappdata(handles.optionspanel, 'image_filtered', im_filtered);
 
-% get selected filter handle
-h = get(handles.uibuttonfilters, 'SelectedObject'); % get the required filter handle
-data.filter = get(h, 'Tag');    % get the tag
+    end
 
-switch data.filter
-    case 'high_pass'
-        set(handles.stop_freq, 'Enable', 'off');
-        setappdata(handles.optionspanel, 'filter_applied', true);
-        % Create filter
-        imf.absolute =  highPass(imf, passf);
+    % Update image data after every possible operation
+    im_fft = simpleFFT(im);
+    setappdata(handles.optionspanel, 'image', im); %image data available to the whole option panel
+    setappdata(handles.optionspanel, 'image_fft', im_fft); %image fft data available to the whole gui
+
+    orig = getappdata(handles.optionspanel, 'image'); % get the data and save before any applied filters etc...
+    setappdata(handles.optionspanel, 'original_image', orig);
+    orig_fft = getappdata(handles.optionspanel, 'image_fft');
+    setappdata(handles.optionspanel, 'original_image_fft', orig_fft);
+
         
-        %Create filtered image
-        imf_time = simple_IFFT_scaled(imf);
-        im_filtered.image = cj2Transformation.filter(imf.absolute,im.image);
-        im_filtered_fft = fft2(im_filtered.image);
-        
-        setappdata(handles.optionspanel, 'filter_f', imf); %image data available to the whole option panel
-        setappdata(handles.optionspanel, 'filter_time', imf_time); %image fft data available to the whole gui
-        setappdata(handles.optionspanel, 'image_filtered', im_filtered);
-        setappdata(handles.optionspanel, 'image_filtered_fft', im_filtered_fft);
-        
-    case 'low_pass'
-        set(handles.stop_freq, 'Enable', 'off');
-        setappdata(handles.optionspanel, 'filter_applied', true);
-        imf.absolute =  lowPass(imf, passf);
-        
-        %Create filtered image
-        imf_time = simple_IFFT_scaled(imf);
-        im_filtered.image = cj2Transformation.filter(imf.absolute,im.image);
-        im_filtered_fft = fft2(im_filtered.image);
-        
-        setappdata(handles.optionspanel, 'filter_f', imf); %image data available to the whole option panel
-        setappdata(handles.optionspanel, 'filter_time', imf_time); %image fft data available to the whole gui
-        setappdata(handles.optionspanel, 'image_filtered', im_filtered);
-        setappdata(handles.optionspanel, 'image_filtered_fft', im_filtered_fft);
-        
-    case 'band_pass'
-        set(handles.stop_freq, 'Enable', 'on');
-        if passf < stopf
+    % ROTATIONS
+
+    op = imageOperations(orig.image); % instance of class for image operations
+
+    h = get(handles.uibuttonrotations, 'SelectedObject');% get the required rotation handle
+    data.rotation = get(h, 'Tag');    % get the tag
+    switch data.rotation
+        case 'rotate_left'
+            im.image = op.rotate90ccw();
+            setappdata(handles.optionspanel, 'rotations_applied', true);
+        case 'rotate_right'
+            im.image = op.rotate90cw();
+            setappdata(handles.optionspanel, 'rotations_applied', true);
+        case 'rotate_180'
+            im.image = op.rotate180();
+            setappdata(handles.optionspanel, 'rotations_applied', true);
+        case 'mirrorLR'
+            im.image = op.mirrorlr();
+            setappdata(handles.optionspanel, 'rotations_applied', true);
+        case 'mirrorUD'
+            im.image = op.mirrorud();
+            setappdata(handles.optionspanel, 'rotations_applied', true);
+        case 'no_rotation'
+            setappdata(handles.optionspanel, 'rotations_applied', false);
+    end
+
+    % Update image data after every possible operation
+    im_fft = simpleFFT(im);
+    setappdata(handles.optionspanel, 'image', im); %image data available to the whole option panel
+    setappdata(handles.optionspanel, 'image_fft', im_fft); %image fft data available to the whole gui
+
+    
+    %CROPPING or MASKING
+
+    h = get(handles.uibuttoncrop, 'SelectedObject');% get the required rotation handle
+    data.cropping = get(h, 'Tag');    % get the tag
+    
+    height_from  = str2double(get(handles.crop_h_from, 'String'));
+    height_to  = str2double(get(handles.crop_h_to, 'String'));
+    height = height_from:height_to;
+
+    width_from = str2double(get(handles.crop_w_from, 'String'));
+    width_to = str2double(get(handles.crop_w_to, 'String'));
+    width = width_from:width_to;
+
+    switch data.cropping
+        case 'crop'
+            im.image = op.crop(height, width);
+            setappdata(handles.optionspanel, 'cropping_applied', true)
+        case 'mask'        
+            im.image = op.maskout(height, width);
+            setappdata(handles.optionspanel, 'cropping_applied', true)
+        case 'no_crop'  
+            setappdata(handles.optionspanel, 'cropping_applied', false)    
+    end 
+
+    im_fft = simpleFFT(im);
+    setappdata(handles.optionspanel, 'image', im); %image data available to the whole option panel
+    setappdata(handles.optionspanel, 'image_fft', im_fft); %image fft data available to the whole gui
+
+    %SHIFTING
+    
+    % right shift distance
+    sh_r  = str2double(get(handles.shift_r, 'String'));
+    % down shft distance
+    sh_d = str2double(get(handles.shift_d, 'String'));
+    
+    h = get(handles.uibuttonshift, 'SelectedObject');
+    data.shift = get(h, 'Tag');    % get the tag
+
+    %Switch for the shift radiobutons
+    switch data.shift
+        case 'shift_right'
+            im.image = op.shiftRight(sh_r);
+            setappdata(handles.optionspanel, 'shifting_applied', true)
+        case 'shift_down'
+            im.image = op.shiftDown(sh_d);
+            setappdata(handles.optionspanel, 'shifting_applied', true)
+        case 'shiftRD'
+            im.image = op.shiftRightDown(sh_r, sh_d);
+            setappdata(handles.optionspanel, 'shifting_applied', true)
+        case 'no_shift'
+            setappdata(handles.optionspanel, 'shifting_applied', false)
+    end 
+
+    % Update image data after every possible operation
+    im_fft = simpleFFT(im);
+    setappdata(handles.optionspanel, 'image', im); %image data available to the whole option panel
+    setappdata(handles.optionspanel, 'image_fft', im_fft); %image fft data available to the whole gui
+
+    % RESAMPLE 
+    
+    h = get(handles.uibuttonresample, 'SelectedObject');% get the required rotation handle
+    data.resample = get(h, 'Tag');    % get the tag
+    
+    % get ratio for resampling
+    ratio = str2double(get(handles.resampl_ratio, 'String'));
+    
+    switch data.resample
+        case 'resample'
+            if get(handles.antialias, 'Value')
+               im.image = op.resample(ratio, true);
+            else
+               im.image = op.resample(ratio);         % 2nd param is optional, false by default
+            end
+            setappdata(handles.optionspanel, 'resampling_applied', true)
+        case 'no_resampling'
+            set(handles.antialias, 'Value', 0)
+            setappdata(handles.optionspanel, 'resampling_applied', false)
+    end
+
+    % Update image data after every possible operation
+    im_fft = simpleFFT(im);
+    setappdata(handles.optionspanel, 'image', im); %image data available to the whole option panel
+    setappdata(handles.optionspanel, 'image_fft', im_fft); %image fft data available to the whole gui
+
+
+    %FILTERING
+    %filtered image data
+    % get sellected frequencies
+    passf = str2double(get(handles.pass_freq, 'String'));
+    setappdata(handles.uibuttonimage, 'passfreq', passf);
+
+    stopf = str2double(get(handles.stop_freq , 'String'));
+    setappdata(handles.uibuttonimage, 'stopfreq', stopf );
+
+    % get selected filter handle
+    h = get(handles.uibuttonfilters, 'SelectedObject'); % get the required filter handle
+    data.filter = get(h, 'Tag');    % get the tag
+
+    switch data.filter
+        case 'high_pass'
+            set(handles.stop_freq, 'Enable', 'off');
             setappdata(handles.optionspanel, 'filter_applied', true);
-            imf.absolute =  bandPass(imf, passf, stopf);
-            
-        elseif passf > stopf
-            setappdata(handles.optionspanel, 'filter_applied', true);
-            imf.absolute =  bandStop(imf, stopf, passf);
-        else
-            errordlg('Pass and stop frequencies cannot be the same','BP filter error');
-        end
-        %Create filtered image
-        imf_time = simple_IFFT_scaled(imf);
-        im_filtered.image = cj2Transformation.filter(imf.absolute,im.image);
-        im_filtered_fft = fft2(im_filtered.image);
-        
-        setappdata(handles.optionspanel, 'filter_f', imf); %image data available to the whole option panel
-        setappdata(handles.optionspanel, 'filter_time', imf_time); %image fft data available to the whole gui
-        setappdata(handles.optionspanel, 'image_filtered', im_filtered);
-        setappdata(handles.optionspanel, 'image_filtered_fft', im_filtered_fft);
-    case 'no_filter'
-        set(handles.stop_freq, 'Enable', 'off');
-        setappdata(handles.optionspanel, 'filter_applied', false);
-        
-        
-end
+            % Create filter
+            imf.absolute =  highPass(imf, passf);
 
+            %Create filtered image
+            imf_time = simple_IFFT_scaled(imf);
+            im_filtered.image = cj2Transformation.filter(imf.absolute,im.image);
+            im_filtered_fft = fft2(im_filtered.image);
+
+            setappdata(handles.optionspanel, 'filter_f', imf); %image data available to the whole option panel
+            setappdata(handles.optionspanel, 'filter_time', imf_time); %image fft data available to the whole gui
+            setappdata(handles.optionspanel, 'image_filtered', im_filtered);
+            setappdata(handles.optionspanel, 'image_filtered_fft', im_filtered_fft);
+
+        case 'low_pass'
+            set(handles.stop_freq, 'Enable', 'off');
+            setappdata(handles.optionspanel, 'filter_applied', true);
+            imf.absolute =  lowPass(imf, passf);
+
+            %Create filtered image
+            imf_time = simple_IFFT_scaled(imf);
+            im_filtered.image = cj2Transformation.filter(imf.absolute,im.image);
+            im_filtered_fft = fft2(im_filtered.image);
+
+            setappdata(handles.optionspanel, 'filter_f', imf); %image data available to the whole option panel
+            setappdata(handles.optionspanel, 'filter_time', imf_time); %image fft data available to the whole gui
+            setappdata(handles.optionspanel, 'image_filtered', im_filtered);
+            setappdata(handles.optionspanel, 'image_filtered_fft', im_filtered_fft);
+
+        case 'band_pass'
+            set(handles.stop_freq, 'Enable', 'on');
+            if passf < stopf
+                setappdata(handles.optionspanel, 'filter_applied', true);
+                imf.absolute =  bandPass(imf, passf, stopf);
+
+            elseif passf > stopf
+                setappdata(handles.optionspanel, 'filter_applied', true);
+                imf.absolute =  bandStop(imf, stopf, passf);
+            else
+                errordlg('Pass and stop frequencies cannot be the same','BP filter error');
+            end
+            %Create filtered image
+            imf_time = simple_IFFT_scaled(imf);
+            im_filtered.image = cj2Transformation.filter(imf.absolute,im.image);
+            im_filtered_fft = fft2(im_filtered.image);
+
+            setappdata(handles.optionspanel, 'filter_f', imf); %image data available to the whole option panel
+            setappdata(handles.optionspanel, 'filter_time', imf_time); %image fft data available to the whole gui
+            setappdata(handles.optionspanel, 'image_filtered', im_filtered);
+            setappdata(handles.optionspanel, 'image_filtered_fft', im_filtered_fft);
+        case 'no_filter'
+            set(handles.stop_freq, 'Enable', 'off');
+            setappdata(handles.optionspanel, 'filter_applied', false);
+    end
 
 % plotting
 function updatePlots(handles, data)
 %plotting
-im = getappdata(handles.optionspanel, 'image');
+orig = getappdata(handles.optionspanel, 'original_image');
 subplot(2,3,1, 'Parent', handles.plots); % plot the original default pic in time
-imshow(uint8(im.image));
+imshow(uint8(orig.image));
 title('Original Image');
 
-im_fft = getappdata(handles.optionspanel, 'image_fft');
+orig_fft = getappdata(handles.optionspanel, 'original_image_fft');
 subplot(2,3,4, 'Parent', handles.plots); % plot original image in freq
-imshow(im_fft);
+imshow(orig_fft);
 title('Magnitude of FFT Original');
 
 if getappdata(handles.optionspanel, 'filter_applied')
@@ -400,7 +413,18 @@ if getappdata(handles.optionspanel, 'filter_applied')
     im_f_fft = mat2gray(im_f_fft);    %Scale the values between 0 and 1
     imshow(uint8(255*mat2gray(im_f_fft)));
     title('Magnitude of Transformed FFT');
-    
+elseif getappdata(handles.optionspanel, 'rotations_applied') || getappdata(handles.optionspanel, 'cropping_applied')...
+        || getappdata(handles.optionspanel, 'shifting_applied') || getappdata(handles.optionspanel, 'resampling_applied')
+    subplot(2,3,2, 'Parent', handles.plots)
+    im = getappdata(handles.optionspanel, 'image');
+    imshow(im.image);
+    title('Modified Image');
+    subplot(2,3,5, 'Parent', handles.plots)
+    im_fft = getappdata(handles.optionspanel, 'image_fft');
+    imshow(uint8(255*mat2gray(abs(im_fft))));
+    title('Magnitude of FFT Modified');
+    delete(subplot(2,3,3, 'Parent', handles.plots));
+    delete(subplot(2,3,6, 'Parent', handles.plots));
 else
     delete(subplot(2,3,2, 'Parent', handles.plots));
     delete(subplot(2,3,5, 'Parent', handles.plots));
@@ -410,460 +434,159 @@ else
 end
 
 
+%----------------------------- CALLBACKS ----------------------------------
 
-% --- Executes during object creation, after setting all properties.
-function horizontal_stripes_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to horizontal_stripes (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
+%*************************** IMAGES ***************************************
 
+% --- Executes when selected object is changed in uibuttonimage.
+function uibuttonimage_SelectionChangedFcn(hObject, eventdata, handles)
+    % hObject    handle to the selected object in uibuttonimage
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    getAndUpdate(handles);
 
-% --- Executes during object creation, after setting all properties.
-function uibuttonimage_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to uibuttonimage (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-% --- Executes during object creation, after setting all properties.
-
-function xfreq_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to horizontal_stripes (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-
-function stop_freq_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to horizontal_stripes (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-
-function pass_freq_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to horizontal_stripes (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-
-function maxsigma_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to horizontal_stripes (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-function sqwidth_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to horizontal_stripes (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-
-function yfreq_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to horizontal_stripes (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-
-% --- Executes on button press in rotate_left.
-function rotate_left_Callback(hObject, eventdata, handles)
-% hObject    handle to rotate_left (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of rotate_left
+function xfreq_Callback(hObject, eventdata, handles)
+getAndUpdate(handles);
 
 function yfreq_Callback(hObject, eventdata, handles)
-% hObject    handle to rotate_left (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of rotate_left
 getAndUpdate(handles);
 
 function sqwidth_Callback(hObject, eventdata, handles)
-% hObject    handle to rotate_left (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of rotate_left
 getAndUpdate(handles);
 
 function maxsigma_Callback(hObject, eventdata, handles)
-% hObject    handle to rotate_left (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of rotate_left
 getAndUpdate(handles);
 
-
-
-
-function xfreq_Callback(hObject, eventdata, handles)
-% hObject    handle to rotate_left (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of rotate_left
-getAndUpdate(handles);
-
-
-
-function pass_freq_Callback(hObject, eventdata, handles)
-% hObject    handle to rotate_left (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of rotate_left
-getAndUpdate(handles);
-
-
-function stop_freq_Callback(hObject, eventdata, handles)
-% hObject    handle to rotate_left (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of rotate_left
-getAndUpdate(handles);
-
-function vertical_stripes_Callback(hObject, eventdata, handles)
-% hObject    handle to rotate_left (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of rotate_left
-
+%the following callbacks muct exist although they do nothing
 function horizontal_stripes_Callback(hObject, eventdata, handles)
-% hObject    handle to rotate_left (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of rotate_left
-
+function vertical_stripes_Callback(hObject, eventdata, handles)
+function diagonal_stripes_Callback(hObject, eventdata, handles)
+function chessboard_Callback(hObject, eventdata, handles)
 function white_square_Callback(hObject, eventdata, handles)
-% hObject    handle to rotate_left (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of rotate_left
-
-
-% --- If Enable == 'on', executes on mouse press in 5 pixel border.
-% --- Otherwise, executes on mouse press in 5 pixel border or over xfreq.
-function xfreq_ButtonDownFcn(hObject, eventdata, handles)
-% hObject    handle to xfreq (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-
-% --- Executes when selected object is changed in uibuttonfilters.
-function uibuttonfilters_SelectionChangedFcn(hObject, eventdata, handles)
-% hObject    handle to the selected object in uibuttonfilters
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-getAndUpdate(handles)
-
-
-% --- Executes on key press with focus on xfreq and none of its controls.
-function xfreq_KeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to xfreq (see GCBO)
-% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
-%	Key: name of the key that was pressed, in lower case
-%	Character: character interpretation of the key(s) that was pressed
-%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
-% handles    structure with handles and user data (see GUIDATA)
-getAndUpdate(handles);
-
-
-% --- Executes on key press with focus on yfreq and none of its controls.
-function yfreq_KeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to yfreq (see GCBO)
-% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
-%	Key: name of the key that was pressed, in lower case
-%	Character: character interpretation of the key(s) that was pressed
-%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
-% handles    structure with handles and user data (see GUIDATA)
-getAndUpdate(handles);
-
-
-% --- Executes when selected object is changed in uibuttonother.
-function uibuttonother_SelectionChangedFcn(hObject, eventdata, handles)
-% hObject    handle to the selected object in uibuttonother
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-getAndUpdate(handles);
-
+function gaussian_Callback(hObject, eventdata, handles)
+function custom_pic_Callback(hObject, eventdata, handles)
+%******************** ROTATIONS *******************************************
 
 % --- Executes when selected object is changed in uibuttonrotations.
 function uibuttonrotations_SelectionChangedFcn(hObject, eventdata, handles)
-% hObject    handle to the selected object in uibuttonrotations
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 getAndUpdate(handles);
 
+function rotate_right_Callback(hObject, eventdata, handles)
+function rotate_left_Callback(hObject, eventdata, handles)
+function rotate_180_Callback(hObject, eventdata, handles)
+function mirrorLR_Callback(hObject, eventdata, handles)
+function mirrorUD_Callback(hObject, eventdata, handles)
+function no_rotation_Callback(hObject, eventdata, handles)
 
-
-function crop_h_from_Callback(hObject, eventdata, handles)
-% hObject    handle to crop_h_from (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of crop_h_from as text
-%        str2double(get(hObject,'String')) returns contents of crop_h_from as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function crop_h_from_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to crop_h_from (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-
-function crop_w_from_Callback(hObject, eventdata, handles)
-% hObject    handle to crop_w_from (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of crop_w_from as text
-%        str2double(get(hObject,'String')) returns contents of crop_w_from as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function crop_w_from_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to crop_w_from (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on button press in mask.
-function mask_Callback(hObject, eventdata, handles)
-% hObject    handle to mask (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of mask
-
-
-% --- Executes on button press in resample.
-function resample_Callback(hObject, eventdata, handles)
-% hObject    handle to resample (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of resample
-
-
-
-function resampl_ratio_Callback(hObject, eventdata, handles)
-% hObject    handle to resampl_ratio (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of resampl_ratio as text
-%        str2double(get(hObject,'String')) returns contents of resampl_ratio as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function resampl_ratio_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to resampl_ratio (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on button press in antialias.
-function antialias_Callback(hObject, eventdata, handles)
-% hObject    handle to antialias (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of antialias
-
-
-
-function shift_r_Callback(hObject, eventdata, handles)
-% hObject    handle to shift_r (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of shift_r as text
-%        str2double(get(hObject,'String')) returns contents of shift_r as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function shift_r_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to shift_r (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-
-function shift_d_Callback(hObject, eventdata, handles)
-% hObject    handle to shift_d (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of shift_d as text
-%        str2double(get(hObject,'String')) returns contents of shift_d as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function shift_d_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to shift_d (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on button press in shift_right.
-function shift_right_Callback(hObject, eventdata, handles)
-% hObject    handle to shift_right (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of shift_right
-
-
-% --- Executes on button press in crop.
-function crop_Callback(hObject, eventdata, handles)
-% hObject    handle to crop (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of crop
-
-
-% --- Executes on key press with focus on crop_h_from and none of its controls.
-function crop_h_from_KeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to crop_h_from (see GCBO)
-% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
-%	Key: name of the key that was pressed, in lower case
-%	Character: character interpretation of the key(s) that was pressed
-%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
-% handles    structure with handles and user data (see GUIDATA)
-getAndUpdate(handles);
-
-
-% --- Executes on key press with focus on crop_w_from and none of its controls.
-function crop_w_from_KeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to crop_w_from (see GCBO)
-% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
-%	Key: name of the key that was pressed, in lower case
-%	Character: character interpretation of the key(s) that was pressed
-%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
-% handles    structure with handles and user data (see GUIDATA)
-getAndUpdate(handles);
-
-
-% --- Executes on key press with focus on shift_d and none of its controls.
-function shift_d_KeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to shift_d (see GCBO)
-% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
-%	Key: name of the key that was pressed, in lower case
-%	Character: character interpretation of the key(s) that was pressed
-%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
-% handles    structure with handles and user data (see GUIDATA)
-getAndUpdate(handles);
-
-
-% --- Executes on key press with focus on resampl_ratio and none of its controls.
-function resampl_ratio_KeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to resampl_ratio (see GCBO)
-% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
-%	Key: name of the key that was pressed, in lower case
-%	Character: character interpretation of the key(s) that was pressed
-%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
-% handles    structure with handles and user data (see GUIDATA)
-getAndUpdate(handles);
-
-
-% --- Executes on key press with focus on shift_r and none of its controls.
-function shift_r_KeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to shift_r (see GCBO)
-% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
-%	Key: name of the key that was pressed, in lower case
-%	Character: character interpretation of the key(s) that was pressed
-%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
-% handles    structure with handles and user data (see GUIDATA)
-getAndUpdate(handles);
-
+%***************** CROP & MASK ********************************************
 
 % --- Executes when selected object is changed in uibuttoncrop.
 function uibuttoncrop_SelectionChangedFcn(hObject, eventdata, handles)
-% hObject    handle to the selected object in uibuttoncrop 
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 getAndUpdate(handles);
 
+function crop_h_from_Callback(hObject, eventdata, handles)
+getAndUpdate(handles);
 
+function crop_w_from_Callback(hObject, eventdata, handles)
+getAndUpdate(handles);
 
 function crop_h_to_Callback(hObject, eventdata, handles)
-% hObject    handle to crop_h_to (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of crop_h_to as text
-%        str2double(get(hObject,'String')) returns contents of crop_h_to as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function crop_h_to_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to crop_h_to (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
+getAndUpdate(handles);
 
 function crop_w_to_Callback(hObject, eventdata, handles)
-% hObject    handle to crop_w_to (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+getAndUpdate(handles);
 
-% Hints: get(hObject,'String') returns contents of crop_w_to as text
-%        str2double(get(hObject,'String')) returns contents of crop_w_to as a double
+function crop_Callback(hObject, eventdata, handles)
+function mask_Callback(hObject, eventdata, handles)
+function no_crop_Callback(hObject, eventdata, handles)
+
+%**************************** FILTERS *************************************
+
+% --- Executes when selected object is changed in uibuttonfilters.
+function uibuttonfilters_SelectionChangedFcn(hObject, eventdata, handles)
+getAndUpdate(handles)
+
+function pass_freq_Callback(hObject, eventdata, handles)
+getAndUpdate(handles);
+
+function stop_freq_Callback(hObject, eventdata, handles)
+getAndUpdate(handles);
+
+function low_pass_Callback(hObject, eventdata, handles)
+function high_pass_Callback(hObject, eventdata, handles)
+function band_pass_Callback(hObject, eventdata, handles)
+function no_filter_Callback(hObject, eventdata, handles)
+
+%*********************** SHIFTING *****************************************
+
+% --- Executes when selected object is changed in uibuttonshift.
+function uibuttonshift_SelectionChangedFcn(hObject, eventdata, handles)
+getAndUpdate(handles);
+
+function shift_r_Callback(hObject, eventdata, handles)
+getAndUpdate(handles);
+
+function shift_d_Callback(hObject, eventdata, handles)
+getAndUpdate(handles);
+
+function shift_right_Callback(hObject, eventdata, handles)
+function shift_down_Callback(hObject, eventdata, handles)
+function shiftRD_Callback(hObject, eventdata, handles)
+function no_shift_Callback(hObject, eventdata, handles)
+
+%*********************** RESAMPLING ***************************************
+
+% --- Executes when selected object is changed in uibuttonresample.
+function uibuttonresample_SelectionChangedFcn(hObject, eventdata, handles)
+getAndUpdate(handles);
+
+function resampl_ratio_Callback(hObject, eventdata, handles)
+getAndUpdate(handles);
+
+% --- Executes on button press in antialias.
+function antialias_Callback(hObject, eventdata, handles)
+getAndUpdate(handles);
+
+function resample_Callback(hObject, eventdata, handles)
+function no_resampling_Callback(hObject, eventdata, handles)
 
 
+%----------------------- CREATE FUNCTIONS ---------------------------------
+% !!! must exist otherwise program gives errors !!!
 % --- Executes during object creation, after setting all properties.
-function crop_w_to_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to crop_w_to (see GCBO)
+function uibuttonimage_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to uibuttonimage_CreateFcn (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
+function xfreq_CreateFcn(hObject, eventdata, handles)
+function yfreq_CreateFcn(hObject, eventdata, handles)
+function sqwidth_CreateFcn(hObject, eventdata, handles)
+function maxsigma_CreateFcn(hObject, eventdata, handles)
+function horizontal_stripes_CreateFcn(hObject, eventdata, handles)
+function pass_freq_CreateFcn(hObject, eventdata, handles)
+function stop_freq_CreateFcn(hObject, eventdata, handles)
+function crop_h_from_CreateFcn(hObject, eventdata, handles)
+function crop_w_from_CreateFcn(hObject, eventdata, handles)
+function resampl_ratio_CreateFcn(hObject, eventdata, handles)
+function shift_r_CreateFcn(hObject, eventdata, handles)
+function shift_d_CreateFcn(hObject, eventdata, handles)
+function crop_h_to_CreateFcn(hObject, eventdata, handles)
+function crop_w_to_CreateFcn(hObject, eventdata, handles)
+
+%------------------------ Key Pressed functions for edit boxes ------------
+function xfreq_KeyPressFcn(hObject, eventdata, handles)
+function yfreq_KeyPressFcn(hObject, eventdata, handles)
+function sqwidth_KeyPressFcn(hObject, eventdata, handles)
+function maxsigma_KeyPressFcn(hObject, eventdata, handles)
+function pass_freq_KeyPressFcn(hObject, eventdata, handles)
+function stop_freq_KeyPressFcn(hObject, eventdata, handles)
+function crop_h_from_KeyPressFcn(hObject, eventdata, handles)
+function crop_w_from_KeyPressFcn(hObject, eventdata, handles)
+function crop_h_to_KeyPressFcn(hObject, eventdata, handles)
+function crop_w_to_KeyPressFcn(hObject, eventdata, handles)
+function shift_r_KeyPressFcn(hObject, eventdata, handles)
+function shift_d_KeyPressFcn(hObject, eventdata, handles)
+function resampl_ratio_KeyPressFcn(hObject, eventdata, handles)
