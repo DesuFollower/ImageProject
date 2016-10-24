@@ -51,22 +51,11 @@ function basic_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
     % varargin   command line arguments to basic_gui (see VARARGIN)
-    set(handles.uibuttonimage,'selectedobject',handles.horizontal_stripes);
-    set(handles.uibuttonfilters,'selectedobject',handles.no_filter);
-    set(handles.uibuttonrotations,'selectedobject',handles.no_rotation);
 
     global im_height;
     im_height = 200;
     global im_width; 
     im_width = 200;
-    original = sampleImage(im_height,im_width); %original image for reset functionality
-    setappdata(handles.optionspanel, 'original_image', original); %image data available to the whole option panel
-    im = sampleImage(im_height,im_width); %sampleImage object to be used through the program
-    setappdata(handles.optionspanel, 'image', im); %image data available to the whole option panel
-    filter = cj2Filter(im_height,im_width); %filter in frequency
-    setappdata(handles.optionspanel, 'filter_f', filter);
-    im_f = sampleImage(im_height,im_width); %sampleImage object for the filtered image
-    setappdata(handles.optionspanel, 'image_filtered', im_f); %image data available to the whole option panel
     setappdata(handles.optionspanel, 'filter_applied', false)
     setappdata(handles.optionspanel, 'rotations_applied', false)
     setappdata(handles.optionspanel, 'cropping_applied', false)
@@ -101,108 +90,71 @@ function data = getData(handles)
     global im_height;
     global im_width;
 
-    %get original image
-    im = getappdata(handles.optionspanel, 'image');
+    im = sampleImage(im_height,im_width);           %sampleImage object to be used through the program
+    setappdata(handles.optionspanel, 'image', im);  %image data available to the whole option panel
+    im.height = im_height;
+    im.width = im_width;
     assignin('base', 'im', im);
-    imf = getappdata(handles.optionspanel, 'filter_f');
-    assignin('base', 'im_f', imf);
-    im_filtered = getappdata(handles.optionspanel, 'image_filtered');
-    assignin('base', 'im_filtered', im_filtered);
-
-    % get frequency data
-    fx = str2double(get(handles.xfreq, 'String'));
-    setappdata(handles.uibuttonimage, 'imagexfreq', fx);
-
-    fy = str2double(get(handles.yfreq, 'String'));
-    assignin('base', 'yf', fy); % show variable in workspace for debug
-    setappdata(handles.uibuttonimage, 'imageyfreq', fy);
-
-    %get square and sigma values
-    sqwidth = str2double(get(handles.sqwidth, 'String'));
-    setappdata(handles.uibuttonimage, 'squareWidth', sqwidth);
-
-    maxSigma = str2double(get(handles.maxsigma, 'String'));
-    setappdata(handles.uibuttonimage, 'squareWidth', maxSigma);
-
-    %get handles to selected pattern
-    h = get(handles.uibuttonimage,'SelectedObject');
-    assignin('base', 'h', h);
-    data.pattern = get(h,'Tag');
-
-    % Change image size if nt custom
-    if ~strcmp(data.pattern,'custom_pic')
-        % agree size of original with the new size of the image and save the
-           % data when not using custom image
-           reset_size = sampleImage(im_height,im_width);
-            im = reset_size;
-             im_filtered = reset_size; 
-             imf =  cj2Filter(im_height,im_width);
-            setappdata(handles.optionspanel, 'image', im); %image data available to the whole option panel
-            setappdata(handles.optionspanel, 'filter_f', imf); %image data available to the whole option panel
-            setappdata(handles.optionspanel, 'image_filtered', im_filtered);
-
-    end
 
     % PATTERN
-
+    
+    %get handles to selected pattern
+    h = get(handles.uibuttonimage,'SelectedObject');
+    data.pattern = get(h,'Tag');
+    fx = str2double(get(handles.xfreq, 'String'));
+    fy = str2double(get(handles.yfreq, 'String'));
     switch data.pattern % Get Tag of selected object.
         case 'horizontal_stripes'
             im.image = horizontalStripes(im, fy);
-
         case 'vertical_stripes'
             im.image  = verticalStripes(im, fx);
-
         case 'diagonal_stripes'
             im.image = diagonalStripes(im, fx, fy);
-
         case 'chessboard'
             im.image  = chessboard(im, fx, fy);
-
         case 'white_square'
+            sqwidth = str2double(get(handles.sqwidth, 'String'));
             im.image  = whiteSquare(im, sqwidth);
-
         case 'gaussian'
+            maxSigma = str2double(get(handles.maxsigma, 'String'));
             im.image  = gaussianPattern(im, maxSigma);
         case 'custom_pic'
             image = imread('http://www.doc.gold.ac.uk/~mas02fl/MSC101/ImageProcess/defect03_files/fig_2_3_14.jpg');
 %             image = imread('fig_2_3_14.jpg');
-           % agree size of original with the new size of the image and save the data
-           % d is used for correct size estimation in case image is rgb
-            [im.height,im.width, d] = size(image); 
-            [imf.height,imf.width, d] = size(image); 
-            [im_filtered.height,im_filtered.width, d] = size(image);
-            im.image = image;
-            imf=cj2Filter(im.height,im.width);
-            im_filtered.image = image;
-
-            setappdata(handles.optionspanel, 'filter_f', imf); %image data available to the whole option panel
-            setappdata(handles.optionspanel, 'image_filtered', im_filtered);
-
+            [im.height,im.width, d] = size(image); % get the new size of the image
+            if d == 3
+                im.image = rgb2gray(image);
+            else
+                im.image = image;
+            end
     end
 
-    % Update image data after every possible operation
-    im_fft = simpleFFT(im);
-    setappdata(handles.optionspanel, 'image', im); %image data available to the whole option panel
-    setappdata(handles.optionspanel, 'image_fft', im_fft); %image fft data available to the whole gui
-
-    orig = getappdata(handles.optionspanel, 'image'); % get the data and save before any applied filters etc...
+    % get the data and save before any applied filters etc...
+    orig = im;                  
     setappdata(handles.optionspanel, 'original_image', orig);
-    orig_fft = getappdata(handles.optionspanel, 'image_fft');
+    orig_fft = simpleFFT(orig);
     setappdata(handles.optionspanel, 'original_image_fft', orig_fft);
+    orig_h = im.height;
+    orig_w = im.width;
+    filter_h = orig_h;
+    filter_w = orig_w;
 
-        
+    op = imageOperations(orig.image); % instance of class for image operations 
+    
     % ROTATIONS
-
-    op = imageOperations(orig.image); % instance of class for image operations
 
     h = get(handles.uibuttonrotations, 'SelectedObject');% get the required rotation handle
     data.rotation = get(h, 'Tag');    % get the tag
     switch data.rotation
         case 'rotate_left'
             im.image = op.rotate90ccw();
+            filter_h = orig_w;             % swap height and width after rotation
+            filter_w = orig_h;
             setappdata(handles.optionspanel, 'rotations_applied', true);
         case 'rotate_right'
             im.image = op.rotate90cw();
+            filter_h = orig_w;
+            filter_w = orig_h;
             setappdata(handles.optionspanel, 'rotations_applied', true);
         case 'rotate_180'
             im.image = op.rotate180();
@@ -255,6 +207,7 @@ function data = getData(handles)
     
     % right shift distance
     sh_r  = str2double(get(handles.shift_r, 'String'));
+    
     % down shft distance
     sh_d = str2double(get(handles.shift_d, 'String'));
     
@@ -296,6 +249,11 @@ function data = getData(handles)
             else
                im.image = op.resample(ratio);         % 2nd param is optional, false by default
             end
+            [new_h, new_w] = size(im.image);
+            im.height = new_h;
+            im.width = new_w;
+            filter_h = new_h;
+            filter_w = new_w;
             setappdata(handles.optionspanel, 'resampling_applied', true)
         case 'no_resampling'
             set(handles.antialias, 'Value', 0)
@@ -316,7 +274,9 @@ function data = getData(handles)
 
     stopf = str2double(get(handles.stop_freq , 'String'));
     setappdata(handles.uibuttonimage, 'stopfreq', stopf );
-
+    
+    imf=cj2Filter(filter_h, filter_w);
+    assignin('base', 'imf', imf);
     % get selected filter handle
     h = get(handles.uibuttonfilters, 'SelectedObject'); % get the required filter handle
     data.filter = get(h, 'Tag');    % get the tag
@@ -326,12 +286,12 @@ function data = getData(handles)
             set(handles.stop_freq, 'Enable', 'off');
             setappdata(handles.optionspanel, 'filter_applied', true);
             % Create filter
-            imf.absolute =  highPass(imf, passf);
+            imf.absolute =  imf.highPass(passf);
             
             %Create filtered image
-            imf_time = simple_IFFT_scaled(imf);
-            im_filtered.image = cj2Transformation.filter(imf.absolute,im.image);
-            im_filtered_fft = fft2(im_filtered.image);
+            imf_time = imf.simple_IFFT_scaled();
+            im_filtered = cj2Transformation.filter(imf.absolute,im.image);
+            im_filtered_fft = fft2(im_filtered);
 
             setappdata(handles.optionspanel, 'filter_f', imf); %image data available to the whole option panel
             setappdata(handles.optionspanel, 'filter_time', imf_time); %image fft data available to the whole gui
@@ -341,12 +301,12 @@ function data = getData(handles)
         case 'low_pass'
             set(handles.stop_freq, 'Enable', 'off');
             setappdata(handles.optionspanel, 'filter_applied', true);
-            imf.absolute =  lowPass(imf, passf);
+            imf.absolute =  imf.lowPass(passf);
 
             %Create filtered image
             imf_time = simple_IFFT_scaled(imf);
-            im_filtered.image = cj2Transformation.filter(imf.absolute,im.image);
-            im_filtered_fft = fft2(im_filtered.image);
+            im_filtered = cj2Transformation.filter(imf.absolute,im.image);
+            im_filtered_fft = fft2(im_filtered);
 
             setappdata(handles.optionspanel, 'filter_f', imf); %image data available to the whole option panel
             setappdata(handles.optionspanel, 'filter_time', imf_time); %image fft data available to the whole gui
@@ -357,18 +317,18 @@ function data = getData(handles)
             set(handles.stop_freq, 'Enable', 'on');
             if passf < stopf
                 setappdata(handles.optionspanel, 'filter_applied', true);
-                imf.absolute =  bandPass(imf, passf, stopf);
+                imf.absolute =  imf.bandPass(passf, stopf);
 
             elseif passf > stopf
                 setappdata(handles.optionspanel, 'filter_applied', true);
-                imf.absolute =  bandStop(imf, stopf, passf);
+                imf.absolute =  imf.bandStop(stopf, passf);
             else
                 errordlg('Pass and stop frequencies cannot be the same','BP filter error');
             end
             %Create filtered image
             imf_time = simple_IFFT_scaled(imf);
-            im_filtered.image = cj2Transformation.filter(imf.absolute,im.image);
-            im_filtered_fft = fft2(im_filtered.image);
+            im_filtered = cj2Transformation.filter(imf.absolute,im.image);
+            im_filtered_fft = fft2(im_filtered);
 
             setappdata(handles.optionspanel, 'filter_f', imf); %image data available to the whole option panel
             setappdata(handles.optionspanel, 'filter_time', imf_time); %image fft data available to the whole gui
@@ -378,6 +338,9 @@ function data = getData(handles)
             set(handles.stop_freq, 'Enable', 'off');
             setappdata(handles.optionspanel, 'filter_applied', false);
     end
+    % set the image dimensions in GUI
+    set(handles.height1, 'String', im.height);
+    set(handles.width1, 'String', im.width);
 
 % plotting
 function updatePlots(handles, data)
@@ -405,8 +368,7 @@ if getappdata(handles.optionspanel, 'filter_applied')
     
     subplot(2,3,3, 'Parent', handles.plots);
     im_f =  getappdata(handles.optionspanel, 'image_filtered'); %image data available to the whole option panel
-    imshow(uint8(abs(im_f.image)));
-%     assignin('base', 'z', uint8(abs(im_f.image)));
+    imshow(uint8(abs(im_f)));
     title('Filtered Image');
     
     subplot(2,3,6, 'Parent', handles.plots);
@@ -472,6 +434,9 @@ function custom_pic_Callback(hObject, eventdata, handles)
 
 % --- Executes when selected object is changed in uibuttonrotations.
 function uibuttonrotations_SelectionChangedFcn(hObject, eventdata, handles)
+set(handles.uibuttoncrop,'selectedobject',handles.no_crop);
+set(handles.uibuttonshift,'selectedobject',handles.no_shift);
+set(handles.uibuttonresample,'selectedobject',handles.no_resampling);
 getAndUpdate(handles);
 
 function rotate_right_Callback(hObject, eventdata, handles)
@@ -485,6 +450,9 @@ function no_rotation_Callback(hObject, eventdata, handles)
 
 % --- Executes when selected object is changed in uibuttoncrop.
 function uibuttoncrop_SelectionChangedFcn(hObject, eventdata, handles)
+set(handles.uibuttonrotations,'selectedobject',handles.no_rotation);
+set(handles.uibuttonshift,'selectedobject',handles.no_shift);
+set(handles.uibuttonresample,'selectedobject',handles.no_resampling);
 getAndUpdate(handles);
 
 function crop_h_from_Callback(hObject, eventdata, handles)
@@ -524,6 +492,9 @@ function no_filter_Callback(hObject, eventdata, handles)
 
 % --- Executes when selected object is changed in uibuttonshift.
 function uibuttonshift_SelectionChangedFcn(hObject, eventdata, handles)
+set(handles.uibuttonrotations,'selectedobject',handles.no_rotation);
+set(handles.uibuttoncrop,'selectedobject',handles.no_crop);
+set(handles.uibuttonresample,'selectedobject',handles.no_resampling);
 getAndUpdate(handles);
 
 function shift_r_Callback(hObject, eventdata, handles)
@@ -541,6 +512,9 @@ function no_shift_Callback(hObject, eventdata, handles)
 
 % --- Executes when selected object is changed in uibuttonresample.
 function uibuttonresample_SelectionChangedFcn(hObject, eventdata, handles)
+set(handles.uibuttonrotations,'selectedobject',handles.no_rotation);
+set(handles.uibuttoncrop,'selectedobject',handles.no_crop);
+set(handles.uibuttonshift,'selectedobject',handles.no_shift);
 getAndUpdate(handles);
 
 function resampl_ratio_Callback(hObject, eventdata, handles)
