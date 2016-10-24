@@ -19,8 +19,8 @@ classdef cj2Filter
         %Low Pass
         function r=lowPass(obj,cuttoffFrequency)
             %sets the spectrum of a 2d Low pass filter.
-            x0=ceil(obj.height/2);
-            y0=ceil(obj.width/2);
+            x0=ceil((obj.height+1)/2);
+            y0=ceil((obj.width+1)/2);
             obj.absolute=zeros(obj.height,obj.width);
             for row=1:obj.height
                 for column=1:obj.width
@@ -38,8 +38,8 @@ classdef cj2Filter
         %High Pass
         function r=highPass(obj,cuttoffFrequency)
             %sets the spectrum of a 2d high pass filter.
-            x0=ceil(obj.height/2);
-            y0=ceil(obj.width/2);
+            x0=ceil((obj.height+1)/2);
+            y0=ceil((obj.width+1)/2);
             obj.absolute=ones(obj.height,obj.width);
             for row=1:obj.height
                 for column=1:obj.width
@@ -57,9 +57,8 @@ classdef cj2Filter
         %Bandpass
         
         function r = bandPass(obj, cutoffFrequencyOne,cutoffFrequencyTwo)
-            
-            x0=ceil(obj.height/2);
-            y0=ceil(obj.width/2);
+            x0=ceil((obj.height+1)/2);
+            y0=ceil((obj.width+1)/2);
             obj.absolute = zeros(obj.height,obj.width);
             for row = 1: obj.height
                 for column= 1: obj.width
@@ -73,9 +72,8 @@ classdef cj2Filter
             
         end
         function r = bandStop(obj, cutoffFrequencyOne,cutoffFrequencyTwo)
-            
-            x0=ceil(obj.height/2);
-            y0=ceil(obj.width/2);
+            x0=ceil((obj.height+1)/2);
+            y0=ceil((obj.width+1)/2);
             obj.absolute = ones(obj.height,obj.width);
             for row = 1: obj.height
                 for column= 1: obj.width
