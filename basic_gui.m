@@ -165,14 +165,15 @@ function data = getData(handles)
             im.image  = gaussianPattern(im, maxSigma);
         case 'custom_pic'
             image = imread('http://www.doc.gold.ac.uk/~mas02fl/MSC101/ImageProcess/defect03_files/fig_2_3_14.jpg');
-           % agree size of original with the new size of the image and save the
-           % data
-            [im.height,im.width] = size(image); 
-            [imf.height,imf.width] = size(image); 
-            [im_filtered.height,im_filtered.width] = size(image);
+%             image = imread('fig_2_3_14.jpg');
+           % agree size of original with the new size of the image and save the data
+           % d is used for correct size estimation in case image is rgb
+            [im.height,im.width, d] = size(image); 
+            [imf.height,imf.width, d] = size(image); 
+            [im_filtered.height,im_filtered.width, d] = size(image);
             im.image = image;
-            imf.absolute = image;
-            im.image = image;
+            imf=cj2Filter(im.height,im.width);
+            im_filtered.image = image;
 
             setappdata(handles.optionspanel, 'filter_f', imf); %image data available to the whole option panel
             setappdata(handles.optionspanel, 'image_filtered', im_filtered);
@@ -326,7 +327,7 @@ function data = getData(handles)
             setappdata(handles.optionspanel, 'filter_applied', true);
             % Create filter
             imf.absolute =  highPass(imf, passf);
-
+            
             %Create filtered image
             imf_time = simple_IFFT_scaled(imf);
             im_filtered.image = cj2Transformation.filter(imf.absolute,im.image);
@@ -404,7 +405,8 @@ if getappdata(handles.optionspanel, 'filter_applied')
     
     subplot(2,3,3, 'Parent', handles.plots);
     im_f =  getappdata(handles.optionspanel, 'image_filtered'); %image data available to the whole option panel
-    imshow(uint8(255*mat2gray(abs(im_f.image))));
+    imshow(uint8(abs(im_f.image)));
+%     assignin('base', 'z', uint8(abs(im_f.image)));
     title('Filtered Image');
     
     subplot(2,3,6, 'Parent', handles.plots);
@@ -465,6 +467,7 @@ function chessboard_Callback(hObject, eventdata, handles)
 function white_square_Callback(hObject, eventdata, handles)
 function gaussian_Callback(hObject, eventdata, handles)
 function custom_pic_Callback(hObject, eventdata, handles)
+
 %******************** ROTATIONS *******************************************
 
 % --- Executes when selected object is changed in uibuttonrotations.
@@ -552,6 +555,7 @@ function no_resampling_Callback(hObject, eventdata, handles)
 
 
 %----------------------- CREATE FUNCTIONS ---------------------------------
+
 % !!! must exist otherwise program gives errors !!!
 % --- Executes during object creation, after setting all properties.
 function uibuttonimage_CreateFcn(hObject, eventdata, handles)
