@@ -2,7 +2,7 @@ close all;
 clear;
 clc;
 
-image=rgb2gray(imread('lines.jpg'));
+image=rgb2gray(imread('ComplexLines.jpg'));
 canniedImage=edge(image,'canny');
 
 figure(1)
@@ -13,9 +13,9 @@ subplot(2,1,2);
 imshow(canniedImage);
 
 steps=200;
-dFi=2*pi/steps;
+dFi=4*pi/steps;
 Fi=zeros(steps);
-Fi=0:dFi:2*pi-dFi;
+Fi=-pi:dFi:3*pi-dFi;
 
 [height,width]=size(image);
 maxR=sqrt(width*width+height*height);
@@ -38,8 +38,18 @@ for xi=1:height
         end 
    end
 end
+%[Gm,Gd]=imgradient(votingSpace);
+Gm=abs(gradient(votingSpace));
+preMaximus =imgaussfilt(Gm,3);
 
-preMaximus =imgaussfilt(votingSpace,0.01);
+for iR=1:steps
+    for iFi=1:steps
+        if (preMaximus(iR,iFi)< (max(max(preMaximus))/4))
+           preMaximus(iR,iFi)=0;
+        end
+    end
+end 
+
 Maximus=imregionalmax(preMaximus);
 numberOfLines =sum(sum(Maximus));
 radiFy=zeros(numberOfLines,2);
@@ -65,6 +75,7 @@ for xi=1:height
            %end
    end
 end
+
 
 figure(2)
 %subplot(2,1,1);
