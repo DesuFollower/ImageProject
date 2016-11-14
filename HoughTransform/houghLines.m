@@ -22,6 +22,9 @@ votingSpace=zeros(rSteps,FiSteps);
 % maximal deviation of point from the expected line
 threshold=1;
 
+cosFi=cos(Fi);
+sinFi=sin(Fi);
+tic
 %filling voting matrix
 for xi=1:height
    for yi=1:width
@@ -30,7 +33,7 @@ for xi=1:height
             % adding vote to each line point itself belongs to
             for iR=1:rSteps
                 for iFi=1:FiSteps
-                    if(abs(R(iR)-(xi*cos(Fi(iFi))+yi*sin(Fi(iFi))))<=threshold)
+                    if(abs(R(iR)-(xi*cosFi(iFi)+yi*sinFi(iFi)))<=threshold)
                         votingSpace(iR,iFi)=votingSpace(iR,iFi)+1;
                     end
                 end
@@ -38,7 +41,8 @@ for xi=1:height
         end 
    end
 end
-
+toc
+tic
 % filtering voting matix two achieve following goals:
 % 1) Throw away all lines with low amount of votes (achieved by appliyng
 % threshold)
@@ -120,3 +124,4 @@ title('Voting space');
 subplot(2,1,2);
 imshow(Maximus);
 title('Detected lines coordinates');
+toc
