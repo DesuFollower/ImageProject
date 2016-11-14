@@ -135,7 +135,7 @@ function data = getData(handles)
                     im.image = imread(userData.file);
                 else
 %                   im.image = imread('http://www.doc.gold.ac.uk/~mas02fl/MSC101/ImageProcess/defect03_files/fig_2_3_14.jpg');
-                    im.image = imread('cd.jpg');
+                    im.image = imread('./testImages/cd.jpg');
                 end
                 [im.height,im.width, ~] = size(im.image); % get the new size of the image
                 set(handles.load, 'Enable', 'on');  % activate Load image button to load custom image from disk
