@@ -22,7 +22,7 @@ function varargout = basic_gui(varargin)
 
 % Edit the above text to modify the response to help basic_gui
 
-% Last Modified by GUIDE v2.5 11-Nov-2016 14:43:30
+% Last Modified by GUIDE v2.5 21-Nov-2016 14:37:23
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -627,19 +627,22 @@ function thresh_slider_Callback(hObject, eventdata, handles)
     set(handles.thresh, 'String', val);
     
 function step_slider_Callback(hObject, eventdata, handles)
-    val = round(get(hObject, 'Value'))
+    val = round(get(hObject, 'Value'));
     set(handles.step, 'String', val);
     set(handles.nhr_slider, 'Max', val);
-
-
+    if val < get(handles.nhr_slider, 'Value');
+       set(handles.nhr_slider, 'Value', val);
+       set(handles.nhr, 'String', val);
+    end
 
 function nhxy_slider_Callback(hObject, eventdata, handles)
     set(handles.nhxy, 'String', round(get(hObject, 'Value')));
 
-
-
 function nhr_slider_Callback(hObject, eventdata, handles)
     set(handles.nhr, 'String', round(get(hObject, 'Value')));
+    
+function radius1_Callback(hObject, eventdata, handles)  
+function radius2_Callback(hObject, eventdata, handles) 
     
 %----------------------- CREATE FUNCTIONS ---------------------------------
 
