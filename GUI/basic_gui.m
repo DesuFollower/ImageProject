@@ -51,7 +51,15 @@ function basic_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
     % varargin   command line arguments to basic_gui (see VARARGIN)
-
+    
+    % first thing is to add the path to all functions and scripts used
+    %in our case all files including this file are in subdirectories of
+    %MATLAB directory. For other arrangements this code might not work
+    p = path;
+    pa = p(1:3);    % pa is the main dir,e.g. 'C:\'
+    i = strfind(path,pa);   % take the second appearance
+    addpath(genpath(p(1:i(2)-2)));  %add all subfolders to matlab paths
+    
     global im_height;
     im_height = 200;
     global im_width; 
@@ -88,6 +96,7 @@ function data = getData(handles)
     setappdata(handles.optionspanel, 'filter_applied', false)
     setappdata(handles.optionspanel, 'options_applied', false)
     setappdata(handles.featurespanel, 'hough_circle_applied', false)
+    setappdata(handles.featurespanel, 'hough_line_applied', false)
     set(handles.noc,'Visible','off');
     set(handles.num_of_circles,'String', '');
     %globals 
@@ -135,7 +144,7 @@ function data = getData(handles)
                     im.image = imread(userData.file);
                 else
 %                   im.image = imread('http://www.doc.gold.ac.uk/~mas02fl/MSC101/ImageProcess/defect03_files/fig_2_3_14.jpg');
-                    im.image = imread('./testImages/cd.jpg');
+                    im.image = imread('cd.jpg');
                 end
                 [im.height,im.width, ~] = size(im.image); % get the new size of the image
                 set(handles.load, 'Enable', 'on');  % activate Load image button to load custom image from disk
@@ -346,7 +355,12 @@ function data = getData(handles)
         data.hough = get(get(handles.uibuttonhough, 'SelectedObject'), 'Tag');
         switch data.hough
             case 'line' 
-
+                [imageWithLines, votingSpace, Maximus, preMaximus] = houghLines(im.image);
+                setappdata(handles.featurespanel, 'imageWithLines', imageWithLines)
+                setappdata(handles.featurespanel, 'votingSpace', votingSpace)
+                setappdata(handles.featurespanel, 'Maximus', Maximus)
+                setappdata(handles.featurespanel, 'preMaximus', preMaximus)
+                setappdata(handles.featurespanel, 'hough_line_applied', true)
             case 'circle'
                 rad1 = str2double(get(handles.radius1,'String'));
                 rad2 = str2double(get(handles.radius2,'String'));
@@ -421,6 +435,23 @@ function updatePlots(handles, data)
         centers = getappdata(handles.featurespanel, 'centers');
         radii = getappdata(handles.featurespanel, 'radii');
         viscircles(centers, radii,'EdgeColor','b');
+    elseif getappdata(handles.featurespanel, 'hough_line_applied')
+        subplot(3,2,1)
+        imshow(orig.image);title('Original image');
+        imageWithLines = getappdata(handles.featurespanel, 'imageWithLines');
+        subplot(3,2,2)
+        imshow(uint8(imageWithLines));title('Detected lines');
+        votingSpace = getappdata(handles.featurespanel, 'votingSpace');
+        subplot(3,2,3)
+        imshow(uint8(votingSpace));title('Voting space');
+        Maximus = getappdata(handles.featurespanel, 'Maximus');
+        subplot(3,2,4)
+        imshow(Maximus);title('Detected lines coordinates');
+        subplot(3,2,5)
+        surf(votingSpace);title('Voting space');
+        preMaximus = getappdata(handles.featurespanel, 'preMaximus');
+        subplot(3,2,6)
+        surf(preMaximus);title('Filtered voting space');
     else
         subplot(1,2,1); % plot the original default pic in time
         imshow(uint8(orig.image));title('Original Image');
