@@ -1,4 +1,4 @@
-function [imageWithLines, votingSpace, Maximus, preMaximus] = houghLines(image)
+function [imageWithLines, votingSpace, Maximus, preMaximus] = houghLines(image,percentageThreshold, maxAmountOfLines)
     
     [~,~,d] = size(image);
     if d == 3
@@ -57,7 +57,7 @@ function [imageWithLines, votingSpace, Maximus, preMaximus] = houghLines(image)
 
     %applying threshold to voting matrix, throwing away values that are less
     %than 40% of maximum
-    votingThreshold=0.4*max(max(preMaximus));
+    votingThreshold=percentageThreshold*max(max(preMaximus));
     for iR=1:rSteps
         for iFi=1:FiSteps
             if (preMaximus(iR,iFi)< votingThreshold)
@@ -70,24 +70,30 @@ function [imageWithLines, votingSpace, Maximus, preMaximus] = houghLines(image)
     Maximus=imregionalmax(preMaximus);
     %counting dots ( i.e lines detected)
     numberOfLines =sum(sum(Maximus));
-    linesDetected=zeros(numberOfLines,2);
+    linesDetected=zeros(numberOfLines,3);
     index=1;
     %creating array with detected lines' stats
     for iR=1:rSteps
         for iFi=1:FiSteps
             if (Maximus(iR,iFi))
-               linesDetected(index,:)=[iR iFi];
+               linesDetected(index,:)=[iR iFi preMaximus(iR,iFi)];
                index=index+1;
             end
         end
     end   
-
+    
+    if(maxAmountOfLines>numberOfLines)
+      maxAmountOfLines=numberOfLines;
+    end
+    sortedLines= sortrows(linesDetected,3);
+    linesAdmitted= sortedLines(end-maxAmountOfLines+1:end,:);
+    
     %drawing an image to show that lines detected match the original image
     imageWithLines=zeros(height,width);
     for xi=1:height
        for yi=1:width
-                for iPoint=1:numberOfLines
-                        if(abs(R(linesDetected(iPoint,1))-(xi*cos(Fi(linesDetected(iPoint,2)))+yi*sin(Fi(linesDetected(iPoint,2)))))<threshold)
+                for iPoint=1:maxAmountOfLines
+                        if(abs(R(linesAdmitted(iPoint,1))-(xi*cos(Fi(linesAdmitted(iPoint,2)))+yi*sin(Fi(linesAdmitted(iPoint,2)))))<threshold)
                             imageWithLines(xi,yi)=255;
                         end
                end     

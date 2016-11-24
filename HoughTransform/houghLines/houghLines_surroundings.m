@@ -2,7 +2,7 @@ close all;
 clear;
 clc;
 
-image=rgb2gray(imread('ComplexLines.jpg'));
+image=rgb2gray(imread('testlines.png'));
 %pre-processing image with edge detection algorithm
 canniedImage=edge(image,'canny');
 [height,width]=size(image);
@@ -25,7 +25,7 @@ threshold=1;
 cosFi=cos(Fi);
 sinFi=sin(Fi);
 
-distance=5;
+distance=3;
 directionMap =getDirectionMap(distance);
 directionMapLength= distance*4;
 angleSteps= FiSteps/3*2;
@@ -49,12 +49,12 @@ for xi=distance+1:1:height-distance
                     for angleIndex=1:sectorLength
                         cAngle = angleMap(direction, angleIndex);
                         cFi=cAngle+90;
-                        currentR= int16(fix(floor(xi*cosFi(cFi)+yi*sinFi(cFi))/dR))+1;
+                        currentR= int16(floor(xi*cosFi(cFi)+yi*sinFi(cFi))/dR+1);
                         votingSpace(currentR,cFi)=votingSpace(currentR,cFi)+1;
                     end
                 end
             end
-            for direction=directionMapLength/2+1:directionMapLength
+            for direction=(directionMapLength/2+1):1:directionMapLength
                 C=directionMap(direction,:);
                 if (canniedImage(xi+C(1), yi+C(2)))
                     for angleIndex=1:sectorLength
@@ -91,7 +91,7 @@ preMaximus =imfilter(Gm,gaussianFilter);
 
 %applying threshold to voting matrix, throwing away values that are less
 %than 30% of maximum
-votingThreshold=0.45*max(max(preMaximus));
+votingThreshold=0.5*max(max(preMaximus));
 for iR=1:rSteps
     for iFi=1:FiSteps
         if (preMaximus(iR,iFi)< votingThreshold)
