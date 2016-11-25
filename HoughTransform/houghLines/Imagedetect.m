@@ -49,7 +49,7 @@ end
 %testImage = [zeros(height, width); image];
 
 %testImage = image;
-testImage=rgb2gray(imread('HAWRotations.png'));
+testImage=rgb2gray(imread('Publication3.png'));
 cannyTest = edge( testImage, 'canny');
 [height, width]  = size (testImage);
 votingSpace = zeros(3*height, 3*width,length(Phi));
@@ -78,10 +78,11 @@ gaussianFilter = fspecial('gaussian', [13,13], 3);
 Gm = abs(gradient(votingSpace));
 preMaximus = imfilter(Gm, gaussianFilter);
 
-votingThreshold=0.8*max(max(max(preMaximus)));
+
 [height, width] = size(votingSpace(:,:,1));
 
 for angle=1:length(Phi)
+   votingThreshold=0.9*max(max(preMaximus(:,:,angle))); 
     for xi=1:height
         for yi=1:width
             if (preMaximus(xi,yi,angle)< votingThreshold)
@@ -126,6 +127,7 @@ end
 figure (3)
 newImage=sum(newImage,3);
 imshow(uint8(newImage(height:2*height,width:2*width)));
+%imshow(uint8(newImage));
 
 %figure(4)
 %imshow(preMaximus);
