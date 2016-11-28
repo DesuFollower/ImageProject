@@ -2,20 +2,21 @@ close all;
 clear;
 clc;
 
-%image = sampleImage(25,25);
-%image = image.whiteSquare(20);
+% Importing the template image and extracting the edges via Canny
 image=rgb2gray(imread('HAW90.png'));
 canniedImage = edge(image, 'canny');
 figure (1)
 imshow(canniedImage);
+
+
 [height,width]=size(image);
-%votingSpace=zeros(rSteps,FiSteps);
 xc = 0;
 yc = 0;
 % xc and yc are reference points for the center
 Rtable = [];
 
-
+% Filling up the Rtable with the template's edge pixels 
+% relative to the reference point 
 for xi=1:height
    for yi=1:width
         if(canniedImage(xi,yi))
@@ -28,7 +29,7 @@ for xi=1:height
    end
 end
 
-%%
+%% Setting up Rotation matrix on every right angle
 dPhi=pi/2;
 Phi=0:dPhi:2*pi-dPhi;
 rotations=zeros(2,2,length(Phi));
@@ -36,6 +37,7 @@ for i=1:length(Phi)
    rotations(:,:,i)=[cos(Phi(i)) -sin(Phi(i)); sin(Phi(i)) cos(Phi(i))]; 
 end
 
+% Creating other Rtables of the template Rotated 
 RotatedByPi=zeros([size(Rtable) length(Phi)]);
 for angle=1:length(Phi)
     for i=1:size(Rtable,1)
@@ -46,16 +48,17 @@ end
 
 %%
 
-%testImage = [zeros(height, width); image];
-
-%testImage = image;
-testImage=rgb2gray(imread('Publication3.png'));
+% Importing the Test Image from which we want to detect the template
+% Test contains many instances of the template rotated at different angles
+testImage=rgb2gray(imread('HAWRotations.png'));
 cannyTest = edge( testImage, 'canny');
 [height, width]  = size (testImage);
 votingSpace = zeros(3*height, 3*width,length(Phi));
 pixelcount = size(Rtable,1);
 
 
+% Running the Hough Algorithm for voting accross all possible rotations
+%Voting by matching each ege pixel to all possible reference points(centers)
 for xi=1:height
    for yi=1:width
         if(cannyTest(xi,yi))
@@ -71,16 +74,17 @@ for xi=1:height
    end
 end
 
-%figure (2)
-%surf(votingSpace);
+% Taking the absolute of the gradient of the resulting voting space
+% So as to sharpen the local maximas and even them out with the global ones
 gaussianFilter = fspecial('gaussian', [13,13], 3); 
-
 Gm = abs(gradient(votingSpace));
+% Then pass it through a Gaussian filter to Smoothen the peaks
+% And form a usable result and also makes the significant peaks clear
 preMaximus = imfilter(Gm, gaussianFilter);
 
-
+% Threshold the Maximas to avoid any small insignificant peaks from being
+% detected from the voting space
 [height, width] = size(votingSpace(:,:,1));
-
 for angle=1:length(Phi)
    votingThreshold=0.9*max(max(preMaximus(:,:,angle))); 
     for xi=1:height
@@ -91,11 +95,14 @@ for angle=1:length(Phi)
         end
     end 
 end
+
 %reducing filtered coordinates to dots on a voting plane
 Maximus=imregionalmax(preMaximus);
 
+% Plotting of the new Image from reconstructing the results
+% Firstly collecting all Maximas in an array then plotting
+% the corresponding Maximas Template according to its parameters
 newImage = zeros(height, width,length(Phi));
-
 numberOfShapes = sum(sum(sum(Maximus)));
 centersDetected = zeros(numberOfShapes,2,length(Phi));
 index = 1;
@@ -124,10 +131,17 @@ for i = 1: numberOfShapes
 end
 [height, width]  = size (testImage);
 
+%plotting the  one of voting space
+figure (2)
+surf(votingSpace(:,:,4));
+
+% Plotting the reconstructed image at the part that corresponds the test
+% image..: The centre block .. since its 9*TestImage
 figure (3)
 newImage=sum(newImage,3);
 imshow(uint8(newImage(height:2*height,width:2*width)));
-%imshow(uint8(newImage));
 
-%figure(4)
-%imshow(preMaximus);
+%Plotting the one of the PreMaxima so as to get a glimpse of the voting space after
+%the filtering is done
+figure(4)
+surf(preMaximus(:,:,4));
