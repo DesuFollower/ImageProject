@@ -22,7 +22,7 @@ function varargout = basic_gui(varargin)
 
 % Edit the above text to modify the response to help basic_gui
 
-% Last Modified by GUIDE v2.5 21-Nov-2016 14:37:23
+% Last Modified by GUIDE v2.5 28-Nov-2016 09:48:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -355,7 +355,9 @@ function data = getData(handles)
         data.hough = get(get(handles.uibuttonhough, 'SelectedObject'), 'Tag');
         switch data.hough
             case 'line' 
-                [imageWithLines, votingSpace, Maximus, preMaximus] = houghLines(im.image);
+                threshold = str2double(get(handles.thresh_lines, 'String')); 
+                max_lines = str2double(get(handles.max_lines, 'String'));
+                [imageWithLines, votingSpace, Maximus, preMaximus] = houghLines(im.image, threshold, max_lines);
                 setappdata(handles.featurespanel, 'imageWithLines', imageWithLines)
                 setappdata(handles.featurespanel, 'votingSpace', votingSpace)
                 setappdata(handles.featurespanel, 'Maximus', Maximus)
@@ -616,8 +618,12 @@ function hough_button_Callback(hObject, eventdata, handles)
     set(handles.uibuttonresample,'selectedobject',handles.no_resampling);
     set(handles.uibuttonfilters,'selectedobject',handles.no_filter);
     getAndUpdate(handles);
-    
 
+function lines_thresh_slider_Callback(hObject, eventdata, handles)    
+    val = get(hObject, 'Value');
+    val = round((val*100))*0.01;
+    set(handles.thresh_lines, 'String', val);
+    
 % --- Executes on slider movement.
 function thresh_slider_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'Value') returns position of slider
@@ -643,6 +649,9 @@ function nhr_slider_Callback(hObject, eventdata, handles)
     
 function radius1_Callback(hObject, eventdata, handles)  
 function radius2_Callback(hObject, eventdata, handles) 
+function max_lines_Callback(hObject, eventdata, handles)
+function line_Callback(hObject, eventdata, handles)
+function circle_Callback(hObject, eventdata, handles)
     
 %----------------------- CREATE FUNCTIONS ---------------------------------
 
@@ -670,6 +679,8 @@ function nhr_slider_CreateFcn(hObject, eventdata, handles)
 function load_CreateFcn(hObject, eventdata, handles)
 function radius1_CreateFcn(hObject, eventdata, handles)
 function radius2_CreateFcn(hObject, eventdata, handles)
+function lines_thresh_slider_CreateFcn(hObject, eventdata, handles)
+function max_lines_CreateFcn(hObject, eventdata, handles)
 
 %------------------------ Key loaded functions for edit boxes -------------
 function xfreq_KeyPressFcn(hObject, eventdata, handles)
@@ -695,3 +706,4 @@ function isimage = isImage(file)
     if find(ismember(extension, ext(2:end)))
         isimage = true;
     end
+
