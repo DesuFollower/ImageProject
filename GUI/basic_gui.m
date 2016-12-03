@@ -22,7 +22,7 @@ function varargout = basic_gui(varargin)
 
 % Edit the above text to modify the response to help basic_gui
 
-% Last Modified by GUIDE v2.5 28-Nov-2016 09:48:52
+% Last Modified by GUIDE v2.5 28-Nov-2016 17:29:27
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -64,9 +64,11 @@ function basic_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     im_height = 200;
     global im_width; 
     im_width = 200;
-    setappdata(handles.optionspanel, 'load', false);
-    data = struct('loaded',0);
-    set(handles.load,'UserData', data);
+    data = struct('imfile','cd.jpg');
+    set(handles.load,'UserData', data); %set image in the UserData field of 'Load image' button
+    
+    data = struct('template', 'HAW90.png');
+    set(handles.template,'UserData', data);%set template image in the UserData field of 'Template' panel
 
     % Choose default command line output for basic_gui
     handles.output = hObject;
@@ -97,6 +99,7 @@ function data = getData(handles)
     setappdata(handles.optionspanel, 'options_applied', false)
     setappdata(handles.featurespanel, 'hough_circle_applied', false)
     setappdata(handles.featurespanel, 'hough_line_applied', false)
+    setappdata(handles.featurespanel, 'hough_general_applied', false)
     set(handles.noc,'Visible','off');
     set(handles.num_of_circles,'String', '');
     %globals 
@@ -111,44 +114,28 @@ function data = getData(handles)
 
     % PATTERN
     %get handles to selected pattern
-    userData = get(handles.load, 'UserData');
-    assignin('base','value',userData);
-    if userData.loaded         %if image is loaded from disk
-        im.image = imread(userData.file);
-        [im.height,im.width, ~] = size(im.image); % get the new size of the image
-        setappdata(handles.optionspanel, 'load', true);% make it new custom image
-    else
-        data.pattern = get(get(handles.uibuttonimage,'SelectedObject'), 'Tag'); 
-        if ~strcmp(data.pattern, 'custom_pic')  %if it's not a custom pic
-            set(handles.load, 'Enable', 'off'); %disable the load button
-        end
-        fx = str2double(get(handles.xfreq, 'String'));
-        fy = str2double(get(handles.yfreq, 'String'));
-        switch data.pattern % Get Tag of selected object.
-            case 'horizontal_stripes'
-                im.image = horizontalStripes(im, fy);
-            case 'vertical_stripes'
-                im.image  = verticalStripes(im, fx);
-            case 'diagonal_stripes'
-                im.image = diagonalStripes(im, fx, fy);
-            case 'chessboard'
-                im.image  = chessboard(im, fx, fy);
-            case 'white_square'
-                sqwidth = str2double(get(handles.sqwidth, 'String'));
-                im.image  = whiteSquare(im, sqwidth);
-            case 'gaussian'
-                maxSigma = str2double(get(handles.maxsigma, 'String'));
-                im.image  = gaussianPattern(im, maxSigma);
-            case 'custom_pic'
-                if getappdata(handles.optionspanel, 'load')
-                    im.image = imread(userData.file);
-                else
-%                   im.image = imread('http://www.doc.gold.ac.uk/~mas02fl/MSC101/ImageProcess/defect03_files/fig_2_3_14.jpg');
-                    im.image = imread('cd.jpg');
-                end
-                [im.height,im.width, ~] = size(im.image); % get the new size of the image
-                set(handles.load, 'Enable', 'on');  % activate Load image button to load custom image from disk
-        end
+    data.pattern = get(get(handles.uibuttonimage,'SelectedObject'), 'Tag'); 
+    fx = str2double(get(handles.xfreq, 'String'));
+    fy = str2double(get(handles.yfreq, 'String'));
+    switch data.pattern % Get Tag of selected object.
+        case 'horizontal_stripes'
+            im.image = horizontalStripes(im, fy);
+        case 'vertical_stripes'
+            im.image  = verticalStripes(im, fx);
+        case 'diagonal_stripes'
+            im.image = diagonalStripes(im, fx, fy);
+        case 'chessboard'
+            im.image  = chessboard(im, fx, fy);
+        case 'white_square'
+            sqwidth = str2double(get(handles.sqwidth, 'String'));
+            im.image  = whiteSquare(im, sqwidth);
+        case 'gaussian'
+            maxSigma = str2double(get(handles.maxsigma, 'String'));
+            im.image  = gaussianPattern(im, maxSigma);
+        case 'custom_pic'
+            userData = get(handles.load, 'UserData'); % get the user data stored in Load image button
+            im.image = imread(userData.imfile);       % get the custom image
+            [im.height,im.width, ~] = size(im.image); % get the new size of the image
     end
 
     % get the data and save before any applied filters etc...
@@ -351,6 +338,15 @@ function data = getData(handles)
     end
     
     % Hough transform
+    
+    % show the template image in the template field
+    userData = get(handles.template, 'UserData');
+    templateImage = imread(userData.template);
+    old = findobj(handles.template, 'Type','image');
+    delete(old)     % delete the old template before showing the new one
+    axes('Parent', handles.template);
+    imshow(templateImage);
+    
     if get(handles.hough_button, 'Value');
         data.hough = get(get(handles.uibuttonhough, 'SelectedObject'), 'Tag');
         switch data.hough
@@ -377,6 +373,11 @@ function data = getData(handles)
                 setappdata(handles.featurespanel, 'centers', centers)
                 setappdata(handles.featurespanel, 'radii', radii)
                 setappdata(handles.featurespanel, 'hough_circle_applied', true)
+            case 'general'
+                generalizedImage = houghGeneralized(im.image, templateImage);
+                setappdata(handles.featurespanel, 'hough_general_applied', true)
+                setappdata(handles.featurespanel, 'generalizedImage', generalizedImage);
+                setappdata(handles.featurespanel, 'templateImage', templateImage);
         end
     end
     
@@ -389,10 +390,17 @@ function updatePlots(handles, data)
     %plotting
     orig = getappdata(handles.optionspanel, 'original_image');
     orig_fft = getappdata(handles.optionspanel, 'original_image_fft');
-    [~,~,d] = size(orig.image);
+    [h,w,d] = size(orig.image);
     if d == 3
         orig.image = rgb2gray(orig.image);
     end    
+    if h >= w       % r and c are used in subplot function where 2 images are shown
+       r = 1;       % determines if the images will be displayed next to each other
+       c = 2;       % or one over the other, depending on their size
+    else            % this increases visual quality
+       r = 2;
+       c = 1;
+    end
     axes('Parent', handles.plots);      %activate plot area
     if getappdata(handles.optionspanel, 'filter_applied')
         subplot(3,2,1); % plot the original default pic in time
@@ -430,9 +438,9 @@ function updatePlots(handles, data)
         im_fft = getappdata(handles.optionspanel, 'image_fft');
         imshow(uint8(255*mat2gray(abs(im_fft))));title('Magnitude of FFT Modified');
     elseif getappdata(handles.featurespanel, 'hough_circle_applied')
-        subplot(1,2,1)
+        subplot(r,c,1)
         imshow(orig.image);title('Original image');
-        subplot(1,2,2)
+        subplot(r,c,2)
         imshow(edge(orig.image,'canny'));title('Transformed image');
         centers = getappdata(handles.featurespanel, 'centers');
         radii = getappdata(handles.featurespanel, 'radii');
@@ -454,10 +462,16 @@ function updatePlots(handles, data)
         preMaximus = getappdata(handles.featurespanel, 'preMaximus');
         subplot(3,2,6)
         surf(preMaximus);title('Filtered voting space');
-    else
-        subplot(1,2,1); % plot the original default pic in time
+    elseif getappdata(handles.featurespanel, 'hough_general_applied')
+        subplot(r,c,1)
         imshow(uint8(orig.image));title('Original Image');
-        subplot(1,2,2); % plot original image in freq
+        generalizedImage = getappdata(handles.featurespanel, 'generalizedImage');
+        subplot(r,c,2)
+        imshow(generalizedImage);title('Output image');
+    else
+        subplot(r,c,1); % plot the original default pic in time
+        imshow(uint8(orig.image));title('Original Image');
+        subplot(r,c,2); % plot original image in freq
         imshow(orig_fft);title('Magnitude of FFT Original');
     end
 
@@ -471,9 +485,6 @@ function uibuttonimage_SelectionChangedFcn(hObject, eventdata, handles)
     % hObject    handle to the selected object in uibuttonimage
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
-    userData = get(handles.load, 'UserData');
-    userData.loaded = 0;
-    set(handles.load, 'UserData', userData);
     getAndUpdate(handles);
 
 function xfreq_Callback(hObject, eventdata, handles)
@@ -597,17 +608,30 @@ function no_resampling_Callback(hObject, eventdata, handles)
 %********************** Image loading *************************************
 
 function load_Callback(hObject, eventdata, handles)
+    set(handles.uibuttonimage,'selectedobject',handles.custom_pic);
     [file, dir] = uigetfile();
-    if file
-        if ~isImage(file)
+    if file                 % othw false
+        if ~isImage(file)   % function is in the last section of the script
             errordlg('Please select a valid image file extension', 'Image loading error');
             return;
         end
-        data = struct('file',[dir, file],'loaded',1);
+        data = struct('imfile',[dir, file]); %store image dir + filename
         set(handles.load,'UserData', data);
         getAndUpdate(handles);
     end
-    
+ 
+function load_template_Callback(hObject, eventdata, handles)
+    set(handles.uibuttonhough,'selectedobject',handles.general);
+    [file, dir] = uigetfile();
+    if file                 % othw false
+        if ~isImage(file)   % function is in the last section of the script
+            errordlg('Please select a valid image file extension', 'Image loading error');
+            return;
+        end
+        data = struct('template',[dir, file]); %store image dir + filename
+        set(handles.template,'UserData', data);
+        getAndUpdate(handles);
+    end
 %********************** Hough - Circle ************************************
 
 % --- Executes on button press in hough_button.
@@ -652,6 +676,7 @@ function radius2_Callback(hObject, eventdata, handles)
 function max_lines_Callback(hObject, eventdata, handles)
 function line_Callback(hObject, eventdata, handles)
 function circle_Callback(hObject, eventdata, handles)
+function general_Callback(hObject, eventdata, handles)
     
 %----------------------- CREATE FUNCTIONS ---------------------------------
 
@@ -706,4 +731,5 @@ function isimage = isImage(file)
     if find(ismember(extension, ext(2:end)))
         isimage = true;
     end
+
 
