@@ -7,7 +7,7 @@ t=0:dt:T-dt;
 f0=5;
 omega=2*pi*f0;
 hostSignal=sin(omega*t);
-watermarkSignal=sin(5*omega*t).*sin(4*omega*t)+sin(2*omega*t);
+watermarkSignal=0.5*sin(5*omega*t).*sin(4*omega*t)+sin(2*omega*t);
 sigma=0.1;
 WaterMark=randn(1,length(t));
 
@@ -16,7 +16,7 @@ levels=3;
 [HostC,HostL]=wavedec(hostSignal,levels,'haar');
 [watC,watL]=wavedec(watermarkSignal,levels,'haar');
 %AlphaBlending 
-q=0.1;
+q=0.25;
 p=1-q;
 hostCoef={};
 watCoef={};
