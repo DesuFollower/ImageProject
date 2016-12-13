@@ -35,8 +35,12 @@ end
 waterMarkedC(1,cHstart:cHend)=CHost(cHstart:cHend).*(1-q*q)+CWater(cWstart:cWend).*(q*q);
 
 %Recompose the watermarked Image
-waterMarkedImage=waverec2(waterMarkedC,Sh,'haar');
+waterMarkedImageClean=waverec2(waterMarkedC,Sh,'haar');
 
+%Filter waterMarkedImage
+standardDeviations=0.1
+waterMarkedImage=imgaussfilt(waterMarkedImageClean,standardDeviations);
+[waterMarkedC Sh]=wavedec2(waterMarkedImage,levels,'haar');
 %recovering the Watermark
 recWaterMarCoefficients=zeros(1,length(CHost));
 
@@ -64,16 +68,19 @@ recWaterMarCoefficients(1,cHstart:cHend)=(waterMarkedC(cWstart:cWend)-CHost(cHst
 recoveredWatermark=waverec2(recWaterMarCoefficients,Sh,'haar');
 
 figure(1)
-subplot(2,2,1);
+subplot(2,3,1);
 imshow(hostImage);
 title('Host image');
-subplot(2,2,2);
+subplot(2,3,2);
 imshow(watermarkImage);
 title('WaterMark image');
-subplot(2,2,3);
-imshow(uint8(waterMarkedImage));
+subplot(2,3,3);
+imshow(uint8(waterMarkedImageClean));
 title('Watermarked image');
-subplot(2,2,4);
+subplot(2,3,4);
+imshow(uint8(waterMarkedImage));
+title('Filtered Watermarked image');
+subplot(2,3,5);
 imshow(uint8(recoveredWatermark));
 title('Recovered Watermark ');
 
