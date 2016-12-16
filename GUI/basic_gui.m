@@ -22,7 +22,7 @@ function varargout = basic_gui(varargin)
 
 % Edit the above text to modify the response to help basic_gui
 
-% Last Modified by GUIDE v2.5 28-Nov-2016 17:29:27
+% Last Modified by GUIDE v2.5 16-Dec-2016 12:05:10
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -70,6 +70,9 @@ function basic_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     data = struct('template', 'HAW90.png');
     set(handles.template,'UserData', data);%set template image in the UserData field of 'Template' panel
 
+    data = struct('template_wm', 'WaterMark.png');
+    set(handles.template_wm,'UserData', data);
+    
     % Choose default command line output for basic_gui
     handles.output = hObject;
 
@@ -100,6 +103,7 @@ function data = getData(handles)
     setappdata(handles.featurespanel, 'hough_circle_applied', false)
     setappdata(handles.featurespanel, 'hough_line_applied', false)
     setappdata(handles.featurespanel, 'hough_general_applied', false)
+    setappdata(handles.wm, 'wm_applied', false)
     set(handles.noc,'Visible','off');
     set(handles.num_of_circles,'String', '');
     %globals 
@@ -381,6 +385,29 @@ function data = getData(handles)
         end
     end
     
+    % Watermarking
+    
+    % show the template image in the template field
+    userData = get(handles.template_wm, 'UserData');
+    templateImage = imread(userData.template_wm);
+    old = findobj(handles.template_wm, 'Type','image');
+    delete(old)     % delete the old template before showing the new one
+    axes('Parent', handles.template_wm);
+    imshow(templateImage);
+    
+    if get(handles.wm_button, 'Value');
+        q = str2double(get(handles.q_wm_value, 'String')); 
+        levels = str2double(get(handles.levels_wm_value, 'String')); 
+        sigma = str2double(get(handles.sigma_wm_value, 'String')); 
+        toFilter = get(handles.filter_wm, 'Value');
+        [waterMarkedImageClean, waterMarkedImage, recoveredWatermark] = waveletWatermarking(im.image, templateImage, q, levels, toFilter, sigma);
+        setappdata(handles.wm, 'waterMarkedImageClean', waterMarkedImageClean)
+        setappdata(handles.wm, 'waterMarkedImage', waterMarkedImage)
+        setappdata(handles.wm, 'recoveredWatermark', recoveredWatermark)
+        setappdata(handles.wm, 'templateImage_wm', templateImage)
+        setappdata(handles.wm, 'wm_applied', true)
+    end
+    
     % set the image dimensions in GUI
     set(handles.height1, 'String', im.height);
     set(handles.width1, 'String', im.width);
@@ -468,6 +495,20 @@ function updatePlots(handles, data)
         generalizedImage = getappdata(handles.featurespanel, 'generalizedImage');
         subplot(r,c,2)
         imshow(generalizedImage);title('Output image');
+    elseif getappdata(handles.wm, 'wm_applied')
+        subplot(2,3,1); imshow(orig.image); title('Host image');
+        template = getappdata(handles.wm, 'templateImage_wm');
+        subplot(2,3,2); imshow(template); title('Watermark');
+        wm_clean = getappdata(handles.wm, 'waterMarkedImageClean');
+        subplot(2,3,3); imshow(uint8(wm_clean)); title('Watermarked image');
+        wm_recovered = getappdata(handles.wm, 'recoveredWatermark');
+        isFiltered = get(handles.filter_wm, 'Value');
+        if isFiltered
+            wm_filtered = getappdata(handles.wm, 'waterMarkedImage');
+            subplot(2,3,4); imshow(uint8(wm_filtered)); title('Filtered Watermarked image');
+        end
+        subplot(2,3,5); imshow(uint8(wm_recovered)); title('Recovered Watermark ');
+        
     else
         subplot(r,c,1); % plot the original default pic in time
         imshow(uint8(orig.image));title('Original Image');
@@ -632,6 +673,19 @@ function load_template_Callback(hObject, eventdata, handles)
         set(handles.template,'UserData', data);
         getAndUpdate(handles);
     end
+    
+function load_template_wm_Callback(hObject, eventdata, handles)
+    [file, dir] = uigetfile();
+    if file                 % othw false
+        if ~isImage(file)   % function is in the last section of the script
+            errordlg('Please select a valid image file extension', 'Image loading error');
+            return;
+        end
+        data = struct('template_wm',[dir, file]); %store image dir + filename
+        set(handles.template_wm,'UserData', data);
+        getAndUpdate(handles);
+    end
+    
 %********************** Hough - Circle ************************************
 
 % --- Executes on button press in hough_button.
@@ -677,7 +731,33 @@ function max_lines_Callback(hObject, eventdata, handles)
 function line_Callback(hObject, eventdata, handles)
 function circle_Callback(hObject, eventdata, handles)
 function general_Callback(hObject, eventdata, handles)
+
+%********************* Watermarking ***************************************
+function wm_button_Callback(hObject, eventdata, handles)
+    set(handles.uibuttonrotations,'selectedobject',handles.no_rotation);
+    set(handles.uibuttoncrop,'selectedobject',handles.no_crop);
+    set(handles.uibuttonshift,'selectedobject',handles.no_shift);
+    set(handles.uibuttonresample,'selectedobject',handles.no_resampling);
+    set(handles.uibuttonfilters,'selectedobject',handles.no_filter);
+    getAndUpdate(handles);
     
+function q_wm_Callback(hObject, eventdata, handles)
+    val = get(hObject, 'Value');
+    val = round((val*100))*0.01;
+    set(handles.q_wm_value, 'String', val);  
+  
+function levels_wm_Callback(hObject, eventdata, handles)
+    val = get(hObject, 'Value');
+    val = round(val);
+    set(handles.levels_wm_value, 'String', val);
+
+function sigma_wm_Callback(hObject, eventdata, handles)
+    val = get(hObject, 'Value');
+    val = round((val*10))*0.1;
+    set(handles.sigma_wm_value, 'String', val);
+    
+function filter_wm_Callback(hObject, eventdata, handles)        
+  
 %----------------------- CREATE FUNCTIONS ---------------------------------
 
 % !!! must exist otherwise program gives errors !!!
@@ -706,6 +786,9 @@ function radius1_CreateFcn(hObject, eventdata, handles)
 function radius2_CreateFcn(hObject, eventdata, handles)
 function lines_thresh_slider_CreateFcn(hObject, eventdata, handles)
 function max_lines_CreateFcn(hObject, eventdata, handles)
+function q_wm_CreateFcn(hObject, eventdata, handles)
+function levels_wm_CreateFcn(hObject, eventdata, handles)
+function sigma_wm_CreateFcn(hObject, eventdata, handles)
 
 %------------------------ Key loaded functions for edit boxes -------------
 function xfreq_KeyPressFcn(hObject, eventdata, handles)
@@ -731,5 +814,3 @@ function isimage = isImage(file)
     if find(ismember(extension, ext(2:end)))
         isimage = true;
     end
-
-
