@@ -70,7 +70,7 @@ function basic_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     data = struct('template', 'HAW90.png');
     set(handles.template,'UserData', data);%set template image in the UserData field of 'Template' panel
 
-    data = struct('template_wm', 'WaterMark.png');
+    data = struct('template_wm', 'wm200x200.png');
     set(handles.template_wm,'UserData', data);
     
     % Choose default command line output for basic_gui
@@ -496,16 +496,19 @@ function updatePlots(handles, data)
         subplot(r,c,2)
         imshow(generalizedImage);title('Output image');
     elseif getappdata(handles.wm, 'wm_applied')
-        subplot(2,3,1); imshow(orig.image); title('Host image');
+        subplot(2,3,1); imshow(uint8(orig.image)); title('Host image');
         template = getappdata(handles.wm, 'templateImage_wm');
-        subplot(2,3,2); imshow(template); title('Watermark');
+        subplot(2,3,2); imshow(uint8(template)); title('Watermark');
         wm_clean = getappdata(handles.wm, 'waterMarkedImageClean');
         subplot(2,3,3); imshow(uint8(wm_clean)); title('Watermarked image');
         wm_recovered = getappdata(handles.wm, 'recoveredWatermark');
         isFiltered = get(handles.filter_wm, 'Value');
+        subplot(2,3,4); 
         if isFiltered
             wm_filtered = getappdata(handles.wm, 'waterMarkedImage');
-            subplot(2,3,4); imshow(uint8(wm_filtered)); title('Filtered Watermarked image');
+            imshow(uint8(wm_filtered)); title('Filtered Watermarked image');
+        else
+            delete(subplot(2,3,4));
         end
         subplot(2,3,5); imshow(uint8(wm_recovered)); title('Recovered Watermark ');
         
