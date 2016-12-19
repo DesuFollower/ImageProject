@@ -22,7 +22,7 @@ function varargout = basic_gui(varargin)
 
 % Edit the above text to modify the response to help basic_gui
 
-% Last Modified by GUIDE v2.5 16-Dec-2016 12:05:10
+% Last Modified by GUIDE v2.5 19-Dec-2016 13:03:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -69,9 +69,13 @@ function basic_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     
     data = struct('template', 'HAW90.png');
     set(handles.template,'UserData', data);%set template image in the UserData field of 'Template' panel
-
+    axes('Parent', handles.template); % show the template image in the template field
+    imshow(imread('HAW90.png'));
+    
     data = struct('template_wm', 'wm200x200.png');
     set(handles.template_wm,'UserData', data);
+    axes('Parent', handles.template_wm); % show the template image in the template field
+    imshow(imread('wm200x200.png'));
     
     % Choose default command line output for basic_gui
     handles.output = hObject;
@@ -342,15 +346,7 @@ function data = getData(handles)
     end
     
     % Hough transform
-    
-    % show the template image in the template field
-    userData = get(handles.template, 'UserData');
-    templateImage = imread(userData.template);
-    old = findobj(handles.template, 'Type','image');
-    delete(old)     % delete the old template before showing the new one
-    axes('Parent', handles.template);
-    imshow(templateImage);
-    
+        
     if get(handles.hough_button, 'Value');
         data.hough = get(get(handles.uibuttonhough, 'SelectedObject'), 'Tag');
         switch data.hough
@@ -378,6 +374,8 @@ function data = getData(handles)
                 setappdata(handles.featurespanel, 'radii', radii)
                 setappdata(handles.featurespanel, 'hough_circle_applied', true)
             case 'general'
+                userData = get(handles.template, 'UserData');
+                templateImage = imread(userData.template);
                 generalizedImage = houghGeneralized(im.image, templateImage);
                 setappdata(handles.featurespanel, 'hough_general_applied', true)
                 setappdata(handles.featurespanel, 'generalizedImage', generalizedImage);
@@ -387,20 +385,16 @@ function data = getData(handles)
     
     % Watermarking
     
-    % show the template image in the template field
-    userData = get(handles.template_wm, 'UserData');
-    templateImage = imread(userData.template_wm);
-    old = findobj(handles.template_wm, 'Type','image');
-    delete(old)     % delete the old template before showing the new one
-    axes('Parent', handles.template_wm);
-    imshow(templateImage);
-    
     if get(handles.wm_button, 'Value');
         q = str2double(get(handles.q_wm_value, 'String')); 
         levels = str2double(get(handles.levels_wm_value, 'String')); 
         sigma = str2double(get(handles.sigma_wm_value, 'String')); 
         toFilter = get(handles.filter_wm, 'Value');
-        [waterMarkedImageClean, waterMarkedImage, recoveredWatermark] = waveletWatermarking(im.image, templateImage, q, levels, toFilter, sigma);
+        toRotate = get(handles.rotate_wm, 'Value');
+        degrees = str2double(get(handles.rotate_deg_wm, 'String'));
+        userData = get(handles.template_wm, 'UserData');
+        templateImage = imread(userData.template_wm);
+        [waterMarkedImageClean, waterMarkedImage, recoveredWatermark] = waveletWatermarking(im.image, templateImage, q, levels, sigma, toFilter, toRotate, degrees);
         setappdata(handles.wm, 'waterMarkedImageClean', waterMarkedImageClean)
         setappdata(handles.wm, 'waterMarkedImage', waterMarkedImage)
         setappdata(handles.wm, 'recoveredWatermark', recoveredWatermark)
@@ -503,10 +497,14 @@ function updatePlots(handles, data)
         subplot(2,3,3); imshow(uint8(wm_clean)); title('Watermarked image');
         wm_recovered = getappdata(handles.wm, 'recoveredWatermark');
         isFiltered = get(handles.filter_wm, 'Value');
+        isRotated = get(handles.rotate_wm, 'Value');
         subplot(2,3,4); 
         if isFiltered
             wm_filtered = getappdata(handles.wm, 'waterMarkedImage');
             imshow(uint8(wm_filtered)); title('Filtered Watermarked image');
+        elseif isRotated
+            wm_rotated = getappdata(handles.wm, 'waterMarkedImage');
+            imshow(uint8(wm_rotated)); title('Rotated Watermarked image');
         else
             delete(subplot(2,3,4));
         end
@@ -674,7 +672,10 @@ function load_template_Callback(hObject, eventdata, handles)
         end
         data = struct('template',[dir, file]); %store image dir + filename
         set(handles.template,'UserData', data);
-        getAndUpdate(handles);
+        old = findobj(handles.template, 'Type','image');
+        delete(old)     % delete the old template before showing the new one
+        axes('Parent', handles.template); % show the template image in the template field
+        imshow(imread([dir, file]));
     end
     
 function load_template_wm_Callback(hObject, eventdata, handles)
@@ -686,7 +687,10 @@ function load_template_wm_Callback(hObject, eventdata, handles)
         end
         data = struct('template_wm',[dir, file]); %store image dir + filename
         set(handles.template_wm,'UserData', data);
-        getAndUpdate(handles);
+        old = findobj(handles.template_wm, 'Type','image');
+        delete(old)     % delete the old template before showing the new one
+        axes('Parent', handles.template_wm);
+        imshow(imread([dir, file]));
     end
     
 %********************** Hough - Circle ************************************
@@ -759,7 +763,11 @@ function sigma_wm_Callback(hObject, eventdata, handles)
     val = round((val*10))*0.1;
     set(handles.sigma_wm_value, 'String', val);
     
-function filter_wm_Callback(hObject, eventdata, handles)        
+function filter_wm_Callback(hObject, eventdata, handles)  
+    set(handles.rotate_wm, 'Value', false);
+function rotate_wm_Callback(hObject, eventdata, handles) 
+    set(handles.filter_wm, 'Value', false);
+function rotate_deg_wm_Callback(hObject, eventdata, handles)     
   
 %----------------------- CREATE FUNCTIONS ---------------------------------
 
@@ -792,6 +800,7 @@ function max_lines_CreateFcn(hObject, eventdata, handles)
 function q_wm_CreateFcn(hObject, eventdata, handles)
 function levels_wm_CreateFcn(hObject, eventdata, handles)
 function sigma_wm_CreateFcn(hObject, eventdata, handles)
+function rotate_deg_wm_CreateFcn(hObject, eventdata, handles)
 
 %------------------------ Key loaded functions for edit boxes -------------
 function xfreq_KeyPressFcn(hObject, eventdata, handles)

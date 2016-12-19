@@ -1,10 +1,12 @@
-function [waterMarkedImageClean, waterMarkedImage, recoveredWatermark] = waveletWatermarking(hostImage, watermarkImage, q, levels, toFilter, standardDeviations) 
+function [waterMarkedImageClean, waterMarkedImage, recoveredWatermark] = waveletWatermarking(hostImage, watermarkImage, q, levels, standardDeviations, toFilter, toRotate, degrees) 
 %Inputs:
 %   hostImage - host image for the watermark
 %   watermarkImage - watermark to be embedded
 %   q - weight of watermark coefficients
 %   levels - levels of wavelet decomposition
 %   toFilter - boolean - watermarked image is attacked by filtering
+%   toRotate - boolean - watermarked image is attacked by rotation
+%   degrees - degrees of rotation
 %   standardDeviations - for Gaussian filtering
 
 [~,~,d] = size(hostImage);
@@ -48,7 +50,12 @@ waterMarkedImageClean=waverec2(waterMarkedC,Sh,'haar');
 waterMarkedImage = waterMarkedImageClean;
 %Filter waterMarkedImage
 if toFilter
-    waterMarkedImage=imgaussfilt(waterMarkedImageClean,standardDeviations);
+   waterMarkedImage=imgaussfilt(waterMarkedImageClean,standardDeviations);
+end
+if toRotate
+   hostImage = imrotate(hostImage,degrees,'crop');
+   [CHost,Sh] = wavedec2(hostImage,levels,'haar');
+   waterMarkedImage = imrotate(waterMarkedImageClean,degrees,'crop');
 end
 [waterMarkedC Sh]=wavedec2(waterMarkedImage,levels,'haar');
 %recovering the Watermark
