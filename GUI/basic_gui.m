@@ -47,18 +47,14 @@ end
 % --- Executes just before basic_gui is made visible.
 function basic_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     % This function has no output args, see OutputFcn.
-    % hObject    handle to figure
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    structure with handles and user data (see GUIDATA)
-    % varargin   command line arguments to basic_gui (see VARARGIN)
     
     % first thing is to add the path to all functions and scripts used
-    %in our case all files including this file are in subdirectories of
-    %MATLAB directory. For other arrangements this code might not work
-    p = path;
-    pa = p(1:3);    % pa is the main dir,e.g. 'C:\'
-    i = strfind(path,pa);   % take the second appearance
-    addpath(genpath(p(1:i(2)-2)));  %add all subfolders to matlab paths
+    % in our case all files including this file are in subdirectories of
+    % MATLAB directory. For other arrangements this code might not work
+    
+    p = pwd;            % path to current folder '...\ImageProject\GUI'
+    p = p(1:end-4);     % remove the '\GUI' at the end. Renaming this folder might make the code not work
+    addpath(genpath(p));% add ImageProject folder and all its subfolders to matlab paths
     
     global im_height;
     im_height = 200;
@@ -98,8 +94,9 @@ function varargout = basic_gui_OutputFcn(hObject, eventdata, handles)
     varargout{1} = handles.output;
 
 function getAndUpdate(handles)
-    data = getData(handles);        assignin('base','data',data);
+    data = getData(handles);   
     updatePlots(handles, data);
+    
 function data = getData(handles)
     
     setappdata(handles.optionspanel, 'filter_applied', false)
@@ -417,7 +414,7 @@ function updatePlots(handles, data)
     end    
     if h >= w       % r and c are used in subplot function where 2 images are shown
        r = 1;       % determines if the images will be displayed next to each other
-       c = 2;       % or one over the other, depending on their size
+       c = 2;       % or one over the other, depending on their size,
     else            % this increases visual quality
        r = 2;
        c = 1;
@@ -524,128 +521,97 @@ function updatePlots(handles, data)
 
 % --- Executes when selected object is changed in uibuttonimage.
 function uibuttonimage_SelectionChangedFcn(hObject, eventdata, handles)
-    % hObject    handle to the selected object in uibuttonimage
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    structure with handles and user data (see GUIDATA)
     getAndUpdate(handles);
 
 function xfreq_Callback(hObject, eventdata, handles)
-getAndUpdate(handles);
+    getAndUpdate(handles);
 
 function yfreq_Callback(hObject, eventdata, handles)
-getAndUpdate(handles);
+    getAndUpdate(handles);
 
 function sqwidth_Callback(hObject, eventdata, handles)
-getAndUpdate(handles);
+    getAndUpdate(handles);
 
 function maxsigma_Callback(hObject, eventdata, handles)
-getAndUpdate(handles);
+    getAndUpdate(handles);
 
-%the following callbacks muct exist although they do nothing
-function horizontal_stripes_Callback(hObject, eventdata, handles)
-function vertical_stripes_Callback(hObject, eventdata, handles)
-function diagonal_stripes_Callback(hObject, eventdata, handles)
-function chessboard_Callback(hObject, eventdata, handles)
-function white_square_Callback(hObject, eventdata, handles)
-function gaussian_Callback(hObject, eventdata, handles)
-function custom_pic_Callback(hObject, eventdata, handles)
 
 %******************** ROTATIONS *******************************************
 
 % --- Executes when selected object is changed in uibuttonrotations.
 function uibuttonrotations_SelectionChangedFcn(hObject, eventdata, handles)
-set(handles.uibuttoncrop,'selectedobject',handles.no_crop);
-set(handles.uibuttonshift,'selectedobject',handles.no_shift);
-set(handles.uibuttonresample,'selectedobject',handles.no_resampling);
-getAndUpdate(handles);
+    set(handles.uibuttoncrop,'selectedobject',handles.no_crop);
+    set(handles.uibuttonshift,'selectedobject',handles.no_shift);
+    set(handles.uibuttonresample,'selectedobject',handles.no_resampling);
+    getAndUpdate(handles);
 
-function rotate_right_Callback(hObject, eventdata, handles)
-function rotate_left_Callback(hObject, eventdata, handles)
-function rotate_180_Callback(hObject, eventdata, handles)
-function mirrorLR_Callback(hObject, eventdata, handles)
-function mirrorUD_Callback(hObject, eventdata, handles)
-function no_rotation_Callback(hObject, eventdata, handles)
 
 %***************** CROP & MASK ********************************************
 
 % --- Executes when selected object is changed in uibuttoncrop.
 function uibuttoncrop_SelectionChangedFcn(hObject, eventdata, handles)
-set(handles.uibuttonrotations,'selectedobject',handles.no_rotation);
-set(handles.uibuttonshift,'selectedobject',handles.no_shift);
-set(handles.uibuttonresample,'selectedobject',handles.no_resampling);
-getAndUpdate(handles);
+    set(handles.uibuttonrotations,'selectedobject',handles.no_rotation);
+    set(handles.uibuttonshift,'selectedobject',handles.no_shift);
+    set(handles.uibuttonresample,'selectedobject',handles.no_resampling);
+    getAndUpdate(handles);
 
 function crop_h_from_Callback(hObject, eventdata, handles)
-getAndUpdate(handles);
+    getAndUpdate(handles);
 
 function crop_w_from_Callback(hObject, eventdata, handles)
-getAndUpdate(handles);
+    getAndUpdate(handles);
 
 function crop_h_to_Callback(hObject, eventdata, handles)
-getAndUpdate(handles);
+    getAndUpdate(handles);
 
 function crop_w_to_Callback(hObject, eventdata, handles)
-getAndUpdate(handles);
+    getAndUpdate(handles);
 
-function crop_Callback(hObject, eventdata, handles)
-function mask_Callback(hObject, eventdata, handles)
-function no_crop_Callback(hObject, eventdata, handles)
 
 %**************************** FILTERS *************************************
 
 % --- Executes when selected object is changed in uibuttonfilters.
 function uibuttonfilters_SelectionChangedFcn(hObject, eventdata, handles)
-getAndUpdate(handles)
+    getAndUpdate(handles)
 
 function pass_freq_Callback(hObject, eventdata, handles)
-getAndUpdate(handles);
+    getAndUpdate(handles);
 
 function stop_freq_Callback(hObject, eventdata, handles)
-getAndUpdate(handles);
-
-function low_pass_Callback(hObject, eventdata, handles)
-function high_pass_Callback(hObject, eventdata, handles)
-function band_pass_Callback(hObject, eventdata, handles)
-function no_filter_Callback(hObject, eventdata, handles)
+    getAndUpdate(handles);
 
 %*********************** SHIFTING *****************************************
 
 % --- Executes when selected object is changed in uibuttonshift.
 function uibuttonshift_SelectionChangedFcn(hObject, eventdata, handles)
-set(handles.uibuttonrotations,'selectedobject',handles.no_rotation);
-set(handles.uibuttoncrop,'selectedobject',handles.no_crop);
-set(handles.uibuttonresample,'selectedobject',handles.no_resampling);
-getAndUpdate(handles);
+    set(handles.uibuttonrotations,'selectedobject',handles.no_rotation);
+    set(handles.uibuttoncrop,'selectedobject',handles.no_crop);
+    set(handles.uibuttonresample,'selectedobject',handles.no_resampling);
+    getAndUpdate(handles);
 
 function shift_r_Callback(hObject, eventdata, handles)
-getAndUpdate(handles);
+    getAndUpdate(handles);
 
 function shift_d_Callback(hObject, eventdata, handles)
-getAndUpdate(handles);
+    getAndUpdate(handles);
 
-function shift_right_Callback(hObject, eventdata, handles)
-function shift_down_Callback(hObject, eventdata, handles)
-function shiftRD_Callback(hObject, eventdata, handles)
-function no_shift_Callback(hObject, eventdata, handles)
 
 %*********************** RESAMPLING ***************************************
 
 % --- Executes when selected object is changed in uibuttonresample.
 function uibuttonresample_SelectionChangedFcn(hObject, eventdata, handles)
-set(handles.uibuttonrotations,'selectedobject',handles.no_rotation);
-set(handles.uibuttoncrop,'selectedobject',handles.no_crop);
-set(handles.uibuttonshift,'selectedobject',handles.no_shift);
-getAndUpdate(handles);
+    set(handles.uibuttonrotations,'selectedobject',handles.no_rotation);
+    set(handles.uibuttoncrop,'selectedobject',handles.no_crop);
+    set(handles.uibuttonshift,'selectedobject',handles.no_shift);
+    getAndUpdate(handles);
 
 function resampl_ratio_Callback(hObject, eventdata, handles)
-getAndUpdate(handles);
+    getAndUpdate(handles);
 
 % --- Executes on button press in antialias.
 function antialias_Callback(hObject, eventdata, handles)
-getAndUpdate(handles);
+    getAndUpdate(handles);
 
-function resample_Callback(hObject, eventdata, handles)
-function no_resampling_Callback(hObject, eventdata, handles)
 
 %********************** Image loading *************************************
 
@@ -732,12 +698,6 @@ function nhxy_slider_Callback(hObject, eventdata, handles)
 function nhr_slider_Callback(hObject, eventdata, handles)
     set(handles.nhr, 'String', round(get(hObject, 'Value')));
     
-function radius1_Callback(hObject, eventdata, handles)  
-function radius2_Callback(hObject, eventdata, handles) 
-function max_lines_Callback(hObject, eventdata, handles)
-function line_Callback(hObject, eventdata, handles)
-function circle_Callback(hObject, eventdata, handles)
-function general_Callback(hObject, eventdata, handles)
 
 %********************* Watermarking ***************************************
 function wm_button_Callback(hObject, eventdata, handles)
@@ -766,57 +726,8 @@ function sigma_wm_Callback(hObject, eventdata, handles)
 function filter_wm_Callback(hObject, eventdata, handles)  
     set(handles.rotate_wm, 'Value', false);
 function rotate_wm_Callback(hObject, eventdata, handles) 
-    set(handles.filter_wm, 'Value', false);
-function rotate_deg_wm_Callback(hObject, eventdata, handles)     
+    set(handles.filter_wm, 'Value', false);    
   
-%----------------------- CREATE FUNCTIONS ---------------------------------
-
-% !!! must exist otherwise program gives errors !!!
-% --- Executes during object creation, after setting all properties.
-function uibuttonimage_CreateFcn(hObject, eventdata, handles)
-function xfreq_CreateFcn(hObject, eventdata, handles)
-function yfreq_CreateFcn(hObject, eventdata, handles)
-function sqwidth_CreateFcn(hObject, eventdata, handles)
-function maxsigma_CreateFcn(hObject, eventdata, handles)
-function horizontal_stripes_CreateFcn(hObject, eventdata, handles)
-function pass_freq_CreateFcn(hObject, eventdata, handles)
-function stop_freq_CreateFcn(hObject, eventdata, handles)
-function crop_h_from_CreateFcn(hObject, eventdata, handles)
-function crop_w_from_CreateFcn(hObject, eventdata, handles)
-function resampl_ratio_CreateFcn(hObject, eventdata, handles)
-function shift_r_CreateFcn(hObject, eventdata, handles)
-function shift_d_CreateFcn(hObject, eventdata, handles)
-function crop_h_to_CreateFcn(hObject, eventdata, handles)
-function crop_w_to_CreateFcn(hObject, eventdata, handles)
-function thresh_slider_CreateFcn(hObject, eventdata, handles)
-function step_slider_CreateFcn(hObject, eventdata, handles)
-function nhxy_slider_CreateFcn(hObject, eventdata, handles)
-function nhr_slider_CreateFcn(hObject, eventdata, handles)
-function load_CreateFcn(hObject, eventdata, handles)
-function radius1_CreateFcn(hObject, eventdata, handles)
-function radius2_CreateFcn(hObject, eventdata, handles)
-function lines_thresh_slider_CreateFcn(hObject, eventdata, handles)
-function max_lines_CreateFcn(hObject, eventdata, handles)
-function q_wm_CreateFcn(hObject, eventdata, handles)
-function levels_wm_CreateFcn(hObject, eventdata, handles)
-function sigma_wm_CreateFcn(hObject, eventdata, handles)
-function rotate_deg_wm_CreateFcn(hObject, eventdata, handles)
-
-%------------------------ Key loaded functions for edit boxes -------------
-function xfreq_KeyPressFcn(hObject, eventdata, handles)
-function yfreq_KeyPressFcn(hObject, eventdata, handles)
-function sqwidth_KeyPressFcn(hObject, eventdata, handles)
-function maxsigma_KeyPressFcn(hObject, eventdata, handles)
-function pass_freq_KeyPressFcn(hObject, eventdata, handles)
-function stop_freq_KeyPressFcn(hObject, eventdata, handles)
-function crop_h_from_KeyPressFcn(hObject, eventdata, handles)
-function crop_w_from_KeyPressFcn(hObject, eventdata, handles)
-function crop_h_to_KeyPressFcn(hObject, eventdata, handles)
-function crop_w_to_KeyPressFcn(hObject, eventdata, handles)
-function shift_r_KeyPressFcn(hObject, eventdata, handles)
-function shift_d_KeyPressFcn(hObject, eventdata, handles)
-function resampl_ratio_KeyPressFcn(hObject, eventdata, handles)
-
 
 %<<<<<<<<<<<<<<<<<<<<<< Help functions >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 function isimage = isImage(file)

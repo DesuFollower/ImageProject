@@ -24,7 +24,7 @@ function [centers, radii, numOfCircles] = houghCircles(im, rrange, threshold, st
     R = minR:dr:maxR-dr;
 
     margin = ceil(max(R));
-    votingSpace = zeros(height+2*margin, width+2*margin, steps, 'uint32');
+    votingSpace = zeros(height+2*margin, width+2*margin, steps, 'uint32');%the voting space is with twice the max radius bigger than the original image in height and width 
 
     for x = 1:height
         for y = 1:width
@@ -52,24 +52,25 @@ function peaks = getPeaks(h, R, steps, threshold, nhoodxy, nhoodr)
     threshold = threshold*max(h(:));
     i = 1;
     temp = h;
+    % supress the other maximas that fall into the mask range determined by nhoodxy and nhoodr
     while true
        [maxPeak, indMax] = max(temp(:)); 
-       if maxPeak < threshold
-           break;
+       if maxPeak < threshold   %only values over the threshold are checked
+           break;               %that makes the function extremely fast for high thresholds
        end
        peakind(i) = indMax;
        [ix, iy, ir] = ind2sub(size(h), indMax);
        nhoodrStart = nhoodr;
        nhoodrEnd = nhoodr;
-       if ir <= nhoodr
+       if ir <= nhoodr              
            nhoodrStart = ir - 1;
        end
-       if ir > steps - nhoodr
+       if ir > steps - nhoodr   %radius sensitivity cannot be bigger than number of steps
            nhoodrEnd = steps - ir;
        end
-       for tr = -nhoodrStart:nhoodrEnd
-           for tx = -nhoodxy:nhoodxy
-               for ty = -nhoodxy:nhoodxy
+       for tr = -nhoodrStart:nhoodrEnd  %for every radius 
+           for tx = -nhoodxy:nhoodxy    %evey pixel at tx and ty that is in the mask range
+               for ty = -nhoodxy:nhoodxy %is set to 0
                    temp(ix+tx, iy+ty, ir+tr) = 0;
                end
            end
